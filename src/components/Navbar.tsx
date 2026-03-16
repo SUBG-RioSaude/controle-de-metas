@@ -1,58 +1,57 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useTheme } from "next-themes";
 import Image from "next/image";
 import {
-  Sun,
-  Moon,
-  LayoutList,
-  CheckCircle2,
-  Clock3,
-  FileCheck2,
-  BarChart3,
-  Calendar,
+  Sun, Moon, LayoutList, CheckCircle2, Clock3, FileCheck2,
+  BarChart3, Calendar, LayoutDashboard, Home, LogOut, ChevronDown,
+  Menu, X
 } from "lucide-react";
 import { planos, etapas } from "@/lib/mock-data";
+import { useAuth } from "@/contexts/AuthContext";
 
 const navItems = [
-  { id: "hero", label: "Início" },
-  { id: "panorama", label: "Panorama" },
-  { id: "planos", label: "Planos" },
-  { id: "analise", label: "Análise" },
-  { id: "calendario", label: "Calendário" },
+  { id: "hero",      label: "Início",      icon: Home },
+  { id: "panorama",  label: "Panorama",   icon: LayoutList },
+  { id: "planos",    label: "Planos",     icon: FileCheck2 },
+  { id: "analise",   label: "Análise",    icon: BarChart3 },
+  { id: "calendario",label: "Calendário", icon: Calendar },
 ];
 
+const ROLE_BADGE: Record<string, { label: string; color: string }> = {
+  Pending:      { label: "Pendente",     color: "bg-amber-400/20 text-amber-400" },
+  Visualizador: { label: "Visualizador", color: "bg-sky-400/20 text-sky-400" },
+  Analista:     { label: "Analista",     color: "bg-violet-400/20 text-violet-400" },
+  Aprovador:    { label: "Aprovador",    color: "bg-emerald-400/20 text-emerald-400" },
+  Admin:        { label: "Admin",        color: "bg-rose-400/20 text-rose-400" },
+};
+
+function firstAndLast(name: string) {
+  const parts = name.trim().split(/\s+/);
+  if (parts.length === 1) return parts[0];
+  return `${parts[0]} ${parts[parts.length - 1]}`;
+}
+
 function DropdownPanorama() {
-  const total = etapas.length;
+  const total      = etapas.length;
   const concluidas = etapas.filter((e) => e.status === "Concluída").length;
   const emAndamento = etapas.filter((e) => e.status === "Em Andamento").length;
-  const docsGerados = etapas.filter(
-    (e) => e.documento_comprobatorio === "Documento Gerado"
-  ).length;
-
+  const docsGerados = etapas.filter((e) => e.documento_comprobatorio === "Documento Gerado").length;
   const stats = [
-    { icon: LayoutList, label: "Total etapas", value: total },
-    { icon: CheckCircle2, label: "Concluídas", value: concluidas },
-    { icon: Clock3, label: "Em Andamento", value: emAndamento },
-    { icon: FileCheck2, label: "Docs Gerados", value: docsGerados },
+    { icon: LayoutList,   label: "Total etapas", value: total },
+    { icon: CheckCircle2, label: "Concluídas",   value: concluidas },
+    { icon: Clock3,       label: "Em Andamento", value: emAndamento },
+    { icon: FileCheck2,   label: "Docs Gerados", value: docsGerados },
   ];
-
   return (
     <div className="grid grid-cols-2 gap-3">
       {stats.map(({ icon: Icon, label, value }) => (
-        <div
-          key={label}
-          className="flex flex-col items-start gap-1 p-2 rounded-xl bg-slate-50 dark:bg-white/5"
-        >
+        <div key={label} className="flex flex-col items-start gap-1 p-2 rounded-xl bg-slate-50 dark:bg-white/5">
           <Icon size={14} className="text-primary" />
-          <span className="text-base font-bold text-foreground leading-none">
-            {value}
-          </span>
-          <span className="text-[11px] text-muted-foreground leading-tight">
-            {label}
-          </span>
+          <span className="text-base font-bold text-foreground leading-none">{value}</span>
+          <span className="text-[11px] text-muted-foreground leading-tight">{label}</span>
         </div>
       ))}
     </div>
@@ -63,11 +62,8 @@ function DropdownPlanos() {
   return (
     <div className="flex flex-col gap-1">
       {planos.slice(0, 5).map((plano) => (
-        <a
-          key={plano.id}
-          href="#planos"
-          className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group"
-        >
+        <a key={plano.id} href="#planos"
+          className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group">
           <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold font-mono shrink-0">
             {plano.code}
           </span>
@@ -77,12 +73,7 @@ function DropdownPlanos() {
         </a>
       ))}
       <div className="mt-1 pt-2 border-t border-slate-200/80 dark:border-white/10">
-        <a
-          href="#planos"
-          className="text-[11px] text-primary font-medium hover:underline"
-        >
-          Ver todos os planos →
-        </a>
+        <a href="#planos" className="text-[11px] text-primary font-medium hover:underline">Ver todos os planos →</a>
       </div>
     </div>
   );
@@ -96,20 +87,13 @@ function DropdownAnalise() {
           <BarChart3 size={16} className="text-primary" />
         </div>
         <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-semibold text-foreground">
-            Evolução Mensal
-          </span>
+          <span className="text-sm font-semibold text-foreground">Evolução Mensal</span>
           <span className="text-[11px] text-muted-foreground leading-relaxed">
             Distribuição de etapas por mês e status ao longo de 2025.
           </span>
         </div>
       </div>
-      <a
-        href="#analise"
-        className="text-[11px] text-primary font-medium hover:underline"
-      >
-        Ver análise →
-      </a>
+      <a href="#analise" className="text-[11px] text-primary font-medium hover:underline">Ver análise →</a>
     </div>
   );
 }
@@ -122,36 +106,135 @@ function DropdownCalendario() {
           <Calendar size={16} className="text-primary" />
         </div>
         <div className="flex flex-col gap-0.5">
-          <span className="text-sm font-semibold text-foreground">
-            Calendário de Prazos
-          </span>
+          <span className="text-sm font-semibold text-foreground">Calendário de Prazos</span>
           <span className="text-[11px] text-muted-foreground leading-relaxed">
             Visualize prazos e etapas por data de vencimento.
           </span>
         </div>
       </div>
-      <a
-        href="#calendario"
-        className="text-[11px] text-primary font-medium hover:underline"
-      >
-        Ver calendário →
-      </a>
+      <a href="#calendario" className="text-[11px] text-primary font-medium hover:underline">Ver calendário →</a>
     </div>
   );
 }
 
 const dropdownContent: Record<string, React.ReactNode> = {
-  panorama: <DropdownPanorama />,
-  planos: <DropdownPlanos />,
-  analise: <DropdownAnalise />,
-  calendario: <DropdownCalendario />,
+  panorama:  <DropdownPanorama />,
+  planos:    <DropdownPlanos />,
+  analise:   <DropdownAnalise />,
+  calendario:<DropdownCalendario />,
 };
 
+// ── User Card Dropdown ────────────────────────────────────────────────────────
+
+function UserCard() {
+  const { user, logout } = useAuth();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handle(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handle);
+    return () => document.removeEventListener("mousedown", handle);
+  }, []);
+
+  if (!user) return null;
+
+  const badge = ROLE_BADGE[user.role] ?? ROLE_BADGE.Pending;
+  const displayName = firstAndLast(user.name);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="flex items-center gap-2 px-1.5 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+      >
+        {/* Avatar */}
+        <div className="w-7 h-7 rounded-full overflow-hidden ring-1 ring-primary/30 shrink-0">
+          {user.picture ? (
+            <img src={user.picture} alt={user.name} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-primary/20 flex items-center justify-center text-[11px] font-bold text-primary">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
+        <span className="text-sm font-medium text-foreground hidden lg:block max-w-[120px] truncate">
+          {displayName}
+        </span>
+        <ChevronDown size={12} className={`text-muted-foreground transition-transform ${open ? "rotate-180" : ""} hidden sm:block`} />
+      </button>
+
+      <AnimatePresence>
+        {open && (
+          <motion.div
+            initial={{ opacity: 0, y: -6, scale: 0.97 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -6, scale: 0.97 }}
+            transition={{ duration: 0.16, ease: "easeOut" }}
+            className="absolute top-full right-0 mt-3 w-56 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-2xl shadow-xl p-2 z-50"
+          >
+            {/* User info header */}
+            <div className="flex items-center gap-2.5 px-2 py-2 mb-1">
+              <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-primary/20 shrink-0">
+                {user.picture ? (
+                  <img src={user.picture} alt={user.name} className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
+                    {user.name.charAt(0).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-sm font-semibold text-foreground truncate">{displayName}</span>
+                <span className={`self-start text-[10px] font-semibold px-1.5 py-0.5 rounded-full mt-0.5 ${badge.color}`}>
+                  {badge.label}
+                </span>
+              </div>
+            </div>
+
+            <div className="h-px bg-border/50 my-1" />
+
+            {/* Menu items */}
+            <a href="#hero" onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-sm text-foreground">
+              <Home size={14} className="text-muted-foreground shrink-0" />
+              Página Inicial
+            </a>
+
+            <a href="/dashboard" onClick={() => setOpen(false)}
+              className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-sm text-foreground">
+              <LayoutDashboard size={14} className="text-muted-foreground shrink-0" />
+              Dashboard
+            </a>
+
+            <div className="h-px bg-border/50 my-1" />
+
+            <button onClick={() => { setOpen(false); logout(); }}
+              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors text-sm text-rose-500">
+              <LogOut size={14} className="shrink-0" />
+              Sair
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+}
+
+// ── Main Navbar ───────────────────────────────────────────────────────────────
+
 export function Navbar() {
-  const [active, setActive] = useState("hero");
-  const [scrolled, setScrolled] = useState(false);
+  const [active, setActive]           = useState("hero");
+  const [scrolled, setScrolled]       = useState(false);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
-  const { theme, setTheme } = useTheme();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [mounted, setMounted]         = useState(false);
+  const { theme, setTheme }           = useTheme();
+  const { user, logout }              = useAuth();
+
+  useEffect(() => { setMounted(true); }, []);
 
   useEffect(() => {
     const onScroll = () => {
@@ -168,69 +251,62 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // Close mobile menu on resize if screen becomes large
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) setMobileMenuOpen(false);
+    };
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50">
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-[95%] md:max-w-fit">
       <motion.nav
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className={`flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/[0.88] dark:bg-slate-900/[0.82] backdrop-blur-xl transition-all duration-300 ${
+        className={`flex items-center justify-between gap-2 px-3 md:px-4 py-2 rounded-2xl bg-white/[0.88] dark:bg-slate-900/[0.82] backdrop-blur-xl transition-all duration-300 w-full md:w-auto ${
           scrolled
             ? "shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_4px_12px_rgba(0,0,0,0.08),0_16px_40px_rgba(0,180,180,0.07)] dark:shadow-[0_0_0_1px_rgba(0,180,180,0.12),0_4px_16px_rgba(0,0,0,0.5),0_20px_60px_rgba(0,180,180,0.10)]"
             : "shadow-[0_0_0_1px_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,180,180,0.05)] dark:shadow-[0_0_0_1px_rgba(0,180,180,0.08),0_2px_8px_rgba(0,0,0,0.35),0_12px_36px_rgba(0,180,180,0.08)]"
         }`}
       >
-        {/* Logos de branding */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Logos & Hamburger */}
+        <div className="flex items-center gap-2 md:gap-3 shrink-0">
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="flex md:hidden items-center justify-center w-8 h-8 rounded-full border border-border/50 bg-background/50 text-muted-foreground hover:text-foreground transition-all"
+          >
+            {mobileMenuOpen ? <X size={18} /> : <Menu size={18} />}
+          </button>
+
           <div className="relative flex items-center">
-            <Image
-              src="/brand/logoazul.png"
-              alt="Prefeitura Rio Saúde"
-              width={100}
-              height={32}
-              className="block dark:hidden object-contain"
-              priority
-            />
-            <Image
-              src="/brand/logobranca.png"
-              alt="Prefeitura Rio Saúde"
-              width={100}
-              height={32}
-              className="hidden dark:block object-contain"
-              priority
-            />
+            <Image src="/brand/logoazul.png"    alt="Prefeitura Rio Saúde" width={90} height={28} className="block dark:hidden object-contain md:w-[100px] md:h-[32px]" priority />
+            <Image src="/brand/logobranca.png"  alt="Prefeitura Rio Saúde" width={90} height={28} className="hidden dark:block object-contain md:w-[100px] md:h-[32px]" priority />
           </div>
-
-          <div className="w-px h-6 bg-border/40" />
-
-          <Image
-            src="/brand/tcmrio-logo.png"
-            alt="TCMRio"
-            width={72}
-            height={28}
-            className="object-contain"
-            priority
-          />
+          
+          <div className="w-px h-6 bg-border/40 hidden xs:block" />
+          
+          <Image src="/brand/tcmrio-logo.png" alt="TCMRio" width={64} height={24} className="object-contain hidden xs:block md:w-[72px] md:h-[28px]" priority />
         </div>
 
-        <div className="w-px h-4 bg-border/40 mx-1" />
+        <div className="w-px h-4 bg-border/40 mx-0.5 md:mx-1 hidden md:block" />
 
-        {/* Nav items com separadores */}
+        {/* Desktop Nav items */}
         <div className="hidden md:flex items-center">
           {navItems.map((item, index) => {
-            const isActive = active === item.id;
-            const hasDropdown = item.id !== "hero";
-            const isLast = index === navItems.length - 1;
+            const isActive     = active === item.id;
+            const hasDropdown  = item.id !== "hero";
+            const isLast       = index === navItems.length - 1;
 
             return (
               <div key={item.id} className="flex items-center">
-                <div
-                  className="relative"
+                <div className="relative"
                   onMouseEnter={() => hasDropdown && setOpenDropdown(item.id)}
                   onMouseLeave={() => setOpenDropdown(null)}
                 >
-                  <a
-                    href={`#${item.id}`}
+                  <a href={`#${item.id}`}
                     className={`relative flex items-center text-sm font-medium px-3 py-1.5 rounded-full transition-colors ${
                       isActive
                         ? "text-primary"
@@ -238,8 +314,7 @@ export function Navbar() {
                     }`}
                   >
                     {isActive && (
-                      <motion.span
-                        layoutId="pill"
+                      <motion.span layoutId="pill"
                         className="absolute inset-0 rounded-full bg-primary/10"
                         transition={{ type: "spring", bounce: 0.2, duration: 0.4 }}
                       />
@@ -262,35 +337,117 @@ export function Navbar() {
                   </AnimatePresence>
                 </div>
 
-                {!isLast && (
-                  <div className="w-px h-3.5 bg-border/30 mx-0.5 shrink-0" />
-                )}
+                {!isLast && <div className="w-px h-3.5 bg-border/30 mx-0.5 shrink-0" />}
               </div>
             );
           })}
         </div>
 
-        <div className="w-px h-4 bg-border/40 mx-1" />
+        <div className="flex items-center gap-1 md:gap-2">
+          {/* User card OR login button */}
+          {mounted && user ? (
+            <UserCard />
+          ) : mounted && !user ? (
+            <a href="/login"
+              className="flex items-center text-xs md:text-sm font-medium px-3 md:px-4 py-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all">
+              Login
+            </a>
+          ) : null}
 
-        {/* Theme toggle */}
-        <button
-          onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-          className="flex items-center justify-center w-8 h-8 rounded-full border border-border/50 bg-background/80 text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all duration-200"
-          aria-label="Alternar tema"
-        >
-          <AnimatePresence mode="wait" initial={false}>
-            <motion.span
-              key={theme}
-              initial={{ rotate: -90, opacity: 0 }}
-              animate={{ rotate: 0, opacity: 1 }}
-              exit={{ rotate: 90, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-            >
-              {theme === "dark" ? <Sun size={14} /> : <Moon size={14} />}
-            </motion.span>
-          </AnimatePresence>
-        </button>
+          <div className="w-px h-4 bg-border/40 hidden md:block mx-1" />
+
+          {/* Theme toggle */}
+          <button
+            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+            className="flex items-center justify-center w-8 h-8 rounded-full border border-border/50 bg-background/80 text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all duration-200"
+            aria-label="Alternar tema"
+          >
+            <AnimatePresence mode="wait" initial={false}>
+              <motion.span key={theme}
+                initial={{ rotate: -90, opacity: 0 }}
+                animate={{ rotate: 0, opacity: 1 }}
+                exit={{ rotate: 90, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+              >
+                {mounted && (theme === "dark" ? <Sun size={14} /> : <Moon size={14} />)}
+              </motion.span>
+            </AnimatePresence>
+          </button>
+        </div>
       </motion.nav>
+
+      {/* Mobile Menu Drawer */}
+      <AnimatePresence>
+        {mobileMenuOpen && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMobileMenuOpen(false)}
+              className="fixed inset-0 top-0 left-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm z-[-1] md:hidden"
+            />
+
+            {/* Content */}
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+              className="absolute top-full left-0 right-0 mt-3 p-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-2xl shadow-2xl z-50 md:hidden flex flex-col gap-4 overflow-hidden"
+            >
+              <div className="flex flex-col gap-1">
+                {navItems.map((item) => {
+                  const isActive = active === item.id;
+                  const Icon = item.icon;
+                  return (
+                    <a
+                      key={item.id}
+                      href={`#${item.id}`}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+                        isActive
+                          ? "bg-primary/10 text-primary font-bold"
+                          : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+                      }`}
+                    >
+                      <Icon size={18} />
+                      <span className="text-base">{item.label}</span>
+                      {isActive && <motion.div layoutId="mobile-pill" className="ml-auto w-1.5 h-1.5 rounded-full bg-primary" />}
+                    </a>
+                  );
+                })}
+              </div>
+
+              {user && (
+                <div className="pt-4 border-t border-border/50">
+                  <div className="flex flex-col gap-1">
+                    <a
+                      href="/dashboard"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                    >
+                      <LayoutDashboard size={18} />
+                      <span className="text-base font-medium">Dashboard</span>
+                    </a>
+                    <button
+                      onClick={() => {
+                        setMobileMenuOpen(false);
+                        logout();
+                      }}
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all text-left"
+                    >
+                      <LogOut size={18} />
+                      <span className="text-base font-medium">Sair</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
