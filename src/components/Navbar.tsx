@@ -7,19 +7,22 @@ import Image from "next/image";
 import {
   Sun, Moon, LayoutList, CheckCircle2, Clock3, FileCheck2,
   BarChart3, Calendar, LayoutDashboard, Home, LogOut, ChevronDown,
-  Menu, X
+  Menu, X, Flag, Milestone, BarChart2, CalendarDays,
 } from "lucide-react";
-import { planos, etapas } from "@/lib/mock-data";
+import { planos, etapas, marcos } from "@/lib/mock-data";
 import { useAuth } from "@/contexts/AuthContext";
 import Link from "next/link";
 import { NavLink } from "./NavLink";
 
+
+
 const navItems = [
-  { id: "hero",      label: "Início",      icon: Home },
-  { id: "panorama",  label: "Panorama",   icon: LayoutList },
-  { id: "planos",    label: "Planos",     icon: FileCheck2 },
-  { id: "analise",   label: "Análise",    icon: BarChart3 },
-  { id: "calendario",label: "Calendário", icon: Calendar },
+  { id: "hero",       label: "Início",     icon: Home },
+  { id: "panorama",   label: "Panorama",   icon: LayoutList },
+  { id: "marcos",     label: "Marcos",     icon: Milestone },
+  { id: "planos",     label: "Planos",     icon: Flag },
+  { id: "analise",    label: "Análise",    icon: BarChart2 },
+  { id: "calendario", label: "Calendário", icon: CalendarDays },
 ];
 
 const ROLE_BADGE: Record<string, { label: string; color: string }> = {
@@ -81,6 +84,37 @@ function DropdownPlanos() {
   );
 }
 
+function DropdownMarcos() {
+  const proximos = marcos.filter((m) => {
+    const diff = new Date(m.date).getTime() - new Date("2026-03-16").getTime();
+    return diff / 86400000 > 1;
+  }).length;
+
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-start gap-3">
+        <div className="mt-0.5 flex items-center justify-center w-8 h-8 rounded-xl bg-primary/10 shrink-0">
+          <Flag size={16} className="text-primary" />
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <span className="text-sm font-semibold text-foreground">
+            Marcos do Processo
+          </span>
+          <span className="text-[11px] text-muted-foreground leading-relaxed">
+            {proximos} marcos próximos no ciclo de monitoramento.
+          </span>
+        </div>
+      </div>
+      <a
+        href="#marcos"
+        className="text-[11px] text-primary font-medium hover:underline"
+      >
+        Ver linha do tempo →
+      </a>
+    </div>
+  );
+}
+
 function DropdownAnalise() {
   return (
     <div className="flex flex-col gap-2">
@@ -119,11 +153,12 @@ function DropdownCalendario() {
   );
 }
 
-const dropdownContent: Record<string, React.ElementType> = {
-  panorama:  DropdownPanorama,
-  planos:    DropdownPlanos,
-  analise:   DropdownAnalise,
-  calendario:DropdownCalendario,
+const dropdownContent: Record<string, React.ComponentType> = {
+  panorama: DropdownPanorama,
+  marcos: DropdownMarcos,
+  planos: DropdownPlanos,
+  analise: DropdownAnalise,
+  calendario: DropdownCalendario,
 };
 
 // ── User Card Dropdown ────────────────────────────────────────────────────────

@@ -545,7 +545,7 @@ export function PanoramaSection() {
           </TabsContent>
         </Tabs>
       </div>
-      <ScrollIndicator href="#planos" />
+      <ScrollIndicator href="#marcos" />
     </section>
   );
 }

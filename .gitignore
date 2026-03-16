@@ -23,6 +23,8 @@ dist-ssr
 *.sln
 *.sw?
 
+.next
+.env
 # Next.js
 /.next/
 /out/
