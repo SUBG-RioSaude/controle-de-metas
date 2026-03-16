@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { GoogleLogin } from "@react-oauth/google";
 import { motion } from "framer-motion";
+import { ArrowLeft } from "lucide-react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import Image from "next/image";
 import { loginWithGoogle, AuthUser } from "@/lib/auth";
@@ -47,6 +48,14 @@ export function LoginPage() {
       setLoading(false);
     }
   }
+
+  // Detect if there's already a pending user in context
+  const { user: authUser } = useAuth();
+  useEffect(() => {
+    if (authUser?.role === "Pending") {
+      setPendingUser(authUser);
+    }
+  }, [authUser]);
 
 
   if (pendingUser) {
@@ -98,6 +107,15 @@ export function LoginPage() {
         className="relative z-10 w-full max-w-sm mx-4"
       >
         <div className="bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] rounded-2xl p-8 flex flex-col items-center gap-7">
+          
+          {/* Back to Home */}
+          <button 
+            onClick={() => router.push("/")}
+            className="absolute top-4 left-4 flex items-center gap-1.5 text-white/30 hover:text-white/70 transition-colors text-[10px] font-bold uppercase tracking-wider"
+          >
+            <ArrowLeft size={12} />
+            Início
+          </button>
 
           {/* Logos */}
           <motion.div

@@ -11,6 +11,8 @@ import {
 } from "lucide-react";
 import { planos, etapas } from "@/lib/mock-data";
 import { useAuth } from "@/contexts/AuthContext";
+import Link from "next/link";
+import { NavLink } from "./NavLink";
 
 const navItems = [
   { id: "hero",      label: "Início",      icon: Home },
@@ -117,11 +119,11 @@ function DropdownCalendario() {
   );
 }
 
-const dropdownContent: Record<string, React.ReactNode> = {
-  panorama:  <DropdownPanorama />,
-  planos:    <DropdownPlanos />,
-  analise:   <DropdownAnalise />,
-  calendario:<DropdownCalendario />,
+const dropdownContent: Record<string, React.ElementType> = {
+  panorama:  DropdownPanorama,
+  planos:    DropdownPlanos,
+  analise:   DropdownAnalise,
+  calendario:DropdownCalendario,
 };
 
 // ── User Card Dropdown ────────────────────────────────────────────────────────
@@ -151,9 +153,9 @@ function UserCard() {
         className="flex items-center gap-2 px-1.5 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-all"
       >
         {/* Avatar */}
-        <div className="w-7 h-7 rounded-full overflow-hidden ring-1 ring-primary/30 shrink-0">
+        <div className="w-10 h-10 rounded-full overflow-hidden ring-1 ring-primary/30 shrink-0">
           {user.picture ? (
-            <img src={user.picture} alt={user.name} className="w-full h-full object-cover" />
+            <Image src={user.picture} alt={user.name} width={40} height={40} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-primary/20 flex items-center justify-center text-[11px] font-bold text-primary">
               {user.name.charAt(0).toUpperCase()}
@@ -179,7 +181,7 @@ function UserCard() {
             <div className="flex items-center gap-2.5 px-2 py-2 mb-1">
               <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-primary/20 shrink-0">
                 {user.picture ? (
-                  <img src={user.picture} alt={user.name} className="w-full h-full object-cover" />
+                  <Image src={user.picture} alt={user.name} width={36} height={36} className="w-full h-full object-cover" />
                 ) : (
                   <div className="w-full h-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
                     {user.name.charAt(0).toUpperCase()}
@@ -197,17 +199,17 @@ function UserCard() {
             <div className="h-px bg-border/50 my-1" />
 
             {/* Menu items */}
-            <a href="#hero" onClick={() => setOpen(false)}
+            <Link href="#hero" onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-sm text-foreground">
               <Home size={14} className="text-muted-foreground shrink-0" />
               Página Inicial
-            </a>
+            </Link>
 
-            <a href="/dashboard" onClick={() => setOpen(false)}
+            <Link href={user.role === "Pending" ? "/login" : "/dashboard"} onClick={() => setOpen(false)}
               className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-sm text-foreground">
               <LayoutDashboard size={14} className="text-muted-foreground shrink-0" />
               Dashboard
-            </a>
+            </Link>
 
             <div className="h-px bg-border/50 my-1" />
 
@@ -306,7 +308,8 @@ export function Navbar() {
                   onMouseEnter={() => hasDropdown && setOpenDropdown(item.id)}
                   onMouseLeave={() => setOpenDropdown(null)}
                 >
-                  <a href={`#${item.id}`}
+                  <a
+                    href={`#${item.id}`}
                     className={`relative flex items-center text-sm font-medium px-3 py-1.5 rounded-full transition-colors ${
                       isActive
                         ? "text-primary"
@@ -331,7 +334,10 @@ export function Navbar() {
                         transition={{ duration: 0.18, ease: "easeOut" }}
                         className="absolute top-full left-1/2 -translate-x-1/2 mt-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-2xl shadow-xl p-4 min-w-[220px]"
                       >
-                        {dropdownContent[item.id]}
+                        {(() => {
+                          const Content = dropdownContent[item.id];
+                          return Content ? <Content /> : null;
+                        })()}
                       </motion.div>
                     )}
                   </AnimatePresence>
@@ -348,10 +354,10 @@ export function Navbar() {
           {mounted && user ? (
             <UserCard />
           ) : mounted && !user ? (
-            <a href="/login"
+            <Link href="/login"
               className="flex items-center text-xs md:text-sm font-medium px-3 md:px-4 py-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all">
               Login
-            </a>
+            </Link>
           ) : null}
 
           <div className="w-px h-4 bg-border/40 hidden md:block mx-1" />
@@ -423,14 +429,14 @@ export function Navbar() {
               {user && (
                 <div className="pt-4 border-t border-border/50">
                   <div className="flex flex-col gap-1">
-                    <a
-                      href="/dashboard"
+                    <Link
+                      href={user.role === "Pending" ? "/login" : "/dashboard"}
                       onClick={() => setMobileMenuOpen(false)}
                       className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-all"
                     >
                       <LayoutDashboard size={18} />
                       <span className="text-base font-medium">Dashboard</span>
-                    </a>
+                    </Link>
                     <button
                       onClick={() => {
                         setMobileMenuOpen(false);

@@ -180,7 +180,7 @@ export function HeroSection() {
 
             {/* Card Progresso */}
             <SpotlightCard
-              spotlightColor="rgba(66,185,235,0.18)"
+              spotlightColor="rgba(66, 185, 235, 0.18)"
               className="bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] rounded-2xl p-5"
             >
               <div className="flex items-start justify-between mb-3">
@@ -216,7 +216,7 @@ export function HeroSection() {
 
             {/* Card Stats */}
             <SpotlightCard
-              spotlightColor="rgba(66,185,235,0.12)"
+              spotlightColor="rgba(66, 185, 235, 0.12)"
               className="bg-white/[0.06] backdrop-blur-xl border border-white/10 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)] rounded-2xl p-4"
             >
               <div className="grid grid-cols-4 gap-2">

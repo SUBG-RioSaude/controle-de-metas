@@ -107,7 +107,8 @@
   }
 
   body {
-    @apply bg-background text-foreground font-body antialiased;
+    @apply text-foreground font-body antialiased;
+    background-color: #13335a;
   }
   h1, h2, h3, h4, h5, h6 {
     @apply font-display;
@@ -186,6 +187,11 @@
 @keyframes float-medium {
   0%, 100% { transform: translateY(0) rotate(0deg); }
   50% { transform: translateY(-15px) rotate(-2deg); }
+}
+
+@keyframes typewriter-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 .animate-float-slow {

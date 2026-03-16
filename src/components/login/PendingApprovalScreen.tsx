@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { LogOut, Clock } from "lucide-react";
+import { LogOut, Clock, ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import { AuthUser, clearAuth } from "@/lib/auth";
 import { useRouter } from "next/navigation";
@@ -47,11 +47,26 @@ export function PendingApprovalScreen({ user }: Props) {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 w-full max-w-md bg-white/[0.06] backdrop-blur-xl border border-white/10 rounded-2xl p-8 flex flex-col items-center gap-6 text-center"
       >
+        {/* Back to Home */}
+        <button 
+          onClick={() => router.push("/")}
+          className="absolute top-4 left-4 flex items-center gap-1.5 text-white/30 hover:text-white/70 transition-colors text-[10px] font-bold uppercase tracking-wider"
+        >
+          <ArrowLeft size={12} />
+          Início
+        </button>
+
         {/* Avatar */}
         <div className="relative">
           <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-[#42b9eb]/30 ring-offset-2 ring-offset-transparent">
             {user.picture ? (
-              <img src={user.picture} alt={user.name} className="w-full h-full object-cover" />
+              <Image 
+                src={user.picture} 
+                alt={user.name} 
+                width={80} 
+                height={80} 
+                className="w-full h-full object-cover" 
+              />
             ) : (
               <div className="w-full h-full bg-[#42b9eb]/20 flex items-center justify-center text-2xl font-bold text-[#42b9eb]">
                 {user.name.charAt(0).toUpperCase()}

@@ -1,14 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { planos, etapas } from "@/lib/mock-data";
 import { StatusBadge } from "./StatusBadge";
 import { AnimatedCounter } from "./AnimatedCounter";
 import { ExternalLink, ChevronRight } from "lucide-react";
+import { ScrollIndicator } from "@/components/ui/ScrollIndicator";
 
 export function PlanosSection() {
   const [selected, setSelected] = useState<string | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
   const selectedPlan = planos.find((p) => p.id === selected);
   const planEtapas = selected ? etapas.filter((e) => e.plan_id === selected) : [];
@@ -61,11 +64,11 @@ export function PlanosSection() {
                 <h3 className="font-display font-semibold text-foreground mb-2">{plan.title}</h3>
                 <p className="text-xs text-muted-foreground line-clamp-2 mb-4">{plan.description}</p>
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-muted-foreground">{pe.length} etapas</span>
-                  <span className="text-primary font-semibold">{pp}%</span>
+                  <span className="text-muted-foreground">{mounted ? `${pe.length} etapas` : "-- etapas"}</span>
+                  <span className="text-primary font-semibold">{mounted ? `${pp}%` : "--%"}</span>
                 </div>
                 <div className="h-1.5 bg-muted rounded-full mt-2 overflow-hidden">
-                  <div className="h-full bg-primary/60 rounded-full transition-all" style={{ width: `${pp}%` }} />
+                  <div className="h-full bg-primary/60 rounded-full transition-all" style={{ width: mounted ? `${pp}%` : 0 }} />
                 </div>
               </motion.button>
             );
@@ -145,6 +148,7 @@ export function PlanosSection() {
           )}
         </AnimatePresence>
       </div>
+      <ScrollIndicator href="#analise" />
     </section>
   );
 }

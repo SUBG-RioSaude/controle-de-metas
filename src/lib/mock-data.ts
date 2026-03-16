@@ -13,11 +13,13 @@ const generateEtapas = (): Etapa[] => {
   const etapas: Etapa[] = [];
   let id = 1;
 
-  planos.forEach((plan) => {
-    const count = 3 + Math.floor(Math.random() * 5);
+  planos.forEach((plan, planIdx) => {
+    // Generate a fixed number of steps per plan based on its ID
+    const count = 4 + (parseInt(plan.id) % 3); 
     for (let i = 1; i <= count; i++) {
-      const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, "0");
-      const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, "0");
+      // Deterministic dates based on plan and step index
+      const month = String(((planIdx + i) % 12) + 1).padStart(2, "0");
+      const day = String(((planIdx * 5 + i * 3) % 28) + 1).padStart(2, "0");
       const st = statuses[(id - 1) % statuses.length];
       etapas.push({
         id: String(id),

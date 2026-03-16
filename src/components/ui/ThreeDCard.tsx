@@ -22,6 +22,7 @@ export function CardContainer({
   containerClassName?: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const shineRef = useRef<HTMLDivElement>(null);
   const [isMouseEntered, setIsMouseEntered] = useState(false);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -30,12 +31,21 @@ export function CardContainer({
     const x = (e.clientX - left - width / 2) / 30;
     const y = (e.clientY - top - height / 2) / 30;
     containerRef.current.style.transform = `rotateY(${x}deg) rotateX(${-y}deg)`;
+
+    if (shineRef.current) {
+      const px = ((e.clientX - left) / width) * 100;
+      const py = ((e.clientY - top) / height) * 100;
+      shineRef.current.style.background = `radial-gradient(circle at ${px}% ${py}%, rgba(66,185,235,0.55) 0%, rgba(66,185,235,0.10) 40%, transparent 65%)`;
+    }
   };
 
   const handleMouseLeave = () => {
     setIsMouseEntered(false);
     if (containerRef.current) {
       containerRef.current.style.transform = `rotateY(0deg) rotateX(0deg)`;
+    }
+    if (shineRef.current) {
+      shineRef.current.style.background = "transparent";
     }
   };
 
@@ -54,6 +64,16 @@ export function CardContainer({
           style={{ transformStyle: "preserve-3d" }}
         >
           {children}
+          <div
+            ref={shineRef}
+            aria-hidden
+            className="pointer-events-none absolute rounded-2xl transition-opacity duration-300"
+            style={{
+              inset: "-1px",
+              zIndex: -1,
+              opacity: isMouseEntered ? 1 : 0,
+            }}
+          />
         </div>
       </div>
     </MouseEnterContext.Provider>

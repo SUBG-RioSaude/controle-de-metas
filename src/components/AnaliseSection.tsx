@@ -4,6 +4,7 @@ import { useMemo } from "react";
 import { motion } from "framer-motion";
 import { etapas } from "@/lib/mock-data";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { ScrollIndicator } from "@/components/ui/ScrollIndicator";
 
 export function AnaliseSection() {
   const monthlyData = useMemo(() => {
@@ -81,6 +82,7 @@ export function AnaliseSection() {
           </ResponsiveContainer>
         </motion.div>
       </div>
+      <ScrollIndicator href="#calendario" />
     </section>
   );
 }
