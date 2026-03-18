@@ -336,7 +336,7 @@ function VariantB({ stats }: { stats: StatsData }) {
 // Variante C — Bento assimétrico + SpotlightCard + GradientText + DecryptedText
 // ---------------------------------------------------------------------------
 
-function VariantC({ stats }: { stats: StatsData }) {
+function VariantC({ stats, mounted }: { stats: StatsData; mounted: boolean }) {
   const numAreas = new Set(planos.map((p) => p.area)).size;
 
   // Linha superior + meio: 4 cards menores + 1 grande
@@ -541,7 +541,7 @@ export function PanoramaSection() {
             <VariantB stats={stats} />
           </TabsContent>
           <TabsContent value="c">
-            <VariantC stats={stats} />
+            <VariantC stats={stats} mounted={mounted} />
           </TabsContent>
         </Tabs>
       </div>

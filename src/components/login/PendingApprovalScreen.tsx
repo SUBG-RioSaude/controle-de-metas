@@ -47,15 +47,6 @@ export function PendingApprovalScreen({ user }: Props) {
         transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative z-10 w-full max-w-md bg-white/[0.06] backdrop-blur-xl border border-white/10 rounded-2xl p-8 flex flex-col items-center gap-6 text-center"
       >
-        {/* Back to Home */}
-        <button 
-          onClick={() => router.push("/")}
-          className="absolute top-4 left-4 flex items-center gap-1.5 text-white/30 hover:text-white/70 transition-colors text-[10px] font-bold uppercase tracking-wider"
-        >
-          <ArrowLeft size={12} />
-          Início
-        </button>
-
         {/* Avatar */}
         <div className="relative">
           <div className="w-20 h-20 rounded-full overflow-hidden ring-4 ring-[#42b9eb]/30 ring-offset-2 ring-offset-transparent">
@@ -64,7 +55,7 @@ export function PendingApprovalScreen({ user }: Props) {
                 src={user.picture} 
                 alt={user.name} 
                 width={80} 
-                height={80} 
+                height={80}
                 className="w-full h-full object-cover" 
               />
             ) : (
@@ -105,14 +96,25 @@ export function PendingApprovalScreen({ user }: Props) {
           <Image src="/brand/tcmrio-logo.png" alt="TCMRio" width={72} height={20} className="object-contain opacity-60" />
         </div>
 
-        {/* Logout */}
-        <button
-          onClick={handleLogout}
-          className="flex items-center gap-2 px-4 py-2 rounded-full text-white/40 hover:text-white/70 text-sm transition-colors"
-        >
-          <LogOut size={14} />
-          Sair
-        </button>
+        <div className="flex items-center">
+          {/* Back to Home */}
+          <button 
+            onClick={() => router.push("/")}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-white/40 hover:text-white/70 text-sm transition-colors"
+          >
+            <ArrowLeft size={12} />
+            Voltar
+          </button>
+          {/* Logout */}
+          <button
+            onClick={handleLogout}
+            className="flex items-center gap-2 px-4 py-2 rounded-full text-white/40 hover:text-white/70 text-sm transition-colors"
+          >
+            <LogOut size={14} />
+            Sair
+          </button>
+        </div>
+        
       </motion.div>
     </div>
   );

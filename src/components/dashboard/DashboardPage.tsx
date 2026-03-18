@@ -4,15 +4,17 @@ import { useState } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { TemasView } from "./TemasView";
 import { UsuariosView } from "./UsuariosView";
+import { MarcosView } from "./MarcosView";
+import { SetoresView } from "./SetoresView";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, Users, Home, LogOut, ChevronRight,
-  BarChart3, Target,
+  BarChart3, Target, Flag, Building2,
 } from "lucide-react";
 import Image from "next/image";
 import { Role } from "@/lib/auth";
 
-type View = "temas" | "usuarios";
+type View = "temas" | "usuarios" | "marcos" | "setores";
 
 const ROLE_BADGE: Record<Role, { label: string; color: string }> = {
   Pending:      { label: "Pendente",     color: "bg-amber-400/15 text-amber-400 border-amber-400/20" },
@@ -33,12 +35,14 @@ export function DashboardPage() {
   const isAdmin    = user.role === "Admin";
 
   const navLinks: { id: View; label: string; icon: React.ReactNode; visible: boolean }[] = [
-    { id: "temas",    label: "Metas & Tópicos", icon: <Target size={16} />,        visible: canSeeData },
-    { id: "usuarios", label: "Usuários",         icon: <Users size={16} />,         visible: isAdmin },
+    { id: "temas",    label: "Metas & Tópicos", icon: <Target size={16} />,   visible: canSeeData },
+    { id: "setores",  label: "Setores",         icon: <Building2 size={16} />, visible: isAdmin },
+    { id: "marcos",   label: "Marcos",          icon: <Flag size={16} />,     visible: isAdmin },
+    { id: "usuarios", label: "Usuários",        icon: <Users size={16} />,    visible: isAdmin },
   ];
 
   return (
-    <div className="flex min-h-screen bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
       {/* ── Sidebar ───────────────────────────────────────────────────────── */}
       <aside className="w-64 shrink-0 bg-white dark:bg-slate-900 border-r border-border/50 flex flex-col">
         {/* Brand */}
@@ -133,6 +137,8 @@ export function DashboardPage() {
           className="p-8"
         >
           {view === "temas"    && <TemasView />}
+          {view === "setores"  && isAdmin && <SetoresView />}
+          {view === "marcos"   && isAdmin && <MarcosView />}
           {view === "usuarios" && isAdmin && <UsuariosView />}
         </motion.div>
       </main>
