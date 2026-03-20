@@ -1,12 +1,14 @@
+
 "use client";
 
-import { useEffect, useState } from "react";
-import Image from "next/image";
+import { useCallback, useEffect, useState, useRef } from "react";
 import api from "@/lib/api";
-import { motion } from "framer-motion";
-import { Users, ShieldCheck, Loader2, Search } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { ShieldCheck, Loader2, Search, ChevronDown, Check, AlertCircle, History } from "lucide-react";
 import { toast } from "sonner";
 import { Role, ROLE_ENUM } from "@/lib/auth";
+import { useAuth } from "@/contexts/AuthContext";
+import { useMetaHub, UserRoleLoggedPayload, UserRoleLog } from "@/hooks/useMetaHub";
 
 interface User {
   id:      string;
@@ -15,6 +17,7 @@ interface User {
   picture: string;
   role:    Role;
 }
+
 
 const ROLES: Role[] = ["Visualizador", "Analista", "Aprovador", "Admin", "Pending"];
 
@@ -27,16 +30,32 @@ const ROLE_STYLE: Record<Role, string> = {
 };
 
 export function UsuariosView() {
-  const [users,   setUsers]   = useState<User[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search,  setSearch]  = useState("");
+  const { user: currentUser } = useAuth();
+  const [users,    setUsers]   = useState<User[]>([]);
+  const [loading,  setLoading] = useState(true);
+  const [search,   setSearch]  = useState("");
   const [updating, setUpdating] = useState<string | null>(null);
+  const [liveRoleLogs, setLiveRoleLogs] = useState<Map<string, UserRoleLog>>(new Map());
+
+  const canViewHistory = currentUser?.role === "Admin" || currentUser?.role === "Aprovador";
+
+  const handleUserRoleLogged = useCallback((payload: UserRoleLoggedPayload) => {
+    setLiveRoleLogs((prev) => new Map(prev).set(payload.targetUserId, payload.log));
+  }, []);
+
+  useMetaHub({ onUserRoleLogged: handleUserRoleLogged });
+
+  const mountedRef = useRef(false);
 
   useEffect(() => {
-    api.get<{ success: boolean; data: User[] }>("/users")
-      .then((r) => setUsers(r.data.data))
-      .catch(() => toast.error("Erro ao carregar os usuários."))
-      .finally(() => setLoading(false));
+    if (!mountedRef.current) {
+      mountedRef.current = true;
+      api.get<{ success: boolean; data: User[] }>("/users")
+        .then((r) => setUsers(r.data.data))
+        .catch(() => toast.error("Erro ao carregar os usuários."))
+        .finally(() => setLoading(false));
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleRoleChange(userId: string, newRole: Role) {
@@ -58,14 +77,6 @@ export function UsuariosView() {
       u.email.toLowerCase().includes(search.toLowerCase())
   );
 
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-48">
-        <Loader2 size={24} className="animate-spin text-primary" />
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-center justify-between gap-4 flex-wrap">
@@ -73,7 +84,6 @@ export function UsuariosView() {
           <h2 className="text-xl font-bold text-foreground">Usuários</h2>
           <p className="text-sm text-muted-foreground mt-0.5">{users.length} usuário{users.length !== 1 ? "s" : ""} cadastrado{users.length !== 1 ? "s" : ""}</p>
         </div>
-        {/* Search */}
         <div className="relative">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
@@ -85,14 +95,13 @@ export function UsuariosView() {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="bg-white dark:bg-slate-900 border border-border/50 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-sm">
         <div className="grid grid-cols-[auto_1fr_auto_auto] gap-0 divide-y divide-border/40">
           {/* Header */}
           <div className="col-span-4 grid grid-cols-[auto_1fr_auto_auto] px-5 py-3 bg-slate-50 dark:bg-white/[0.02]">
             <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-10">Avatar</span>
             <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide pl-3">Nome / E-mail</span>
-            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide px-4">Role</span>
+            <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide px-4">Role / Permissão</span>
             <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-8" />
           </div>
 
@@ -100,52 +109,211 @@ export function UsuariosView() {
             <div className="col-span-4 text-center py-8 text-sm text-muted-foreground">Nenhum usuário encontrado.</div>
           )}
 
-          {filtered.map((u) => (
-            <motion.div
+          {filtered.map((u, idx) => (
+            <UserRow
               key={u.id}
-              layout
-              className="col-span-4 grid grid-cols-[auto_1fr_auto_auto] items-center px-5 py-3 hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition-colors"
-            >
-              {/* Avatar */}
-              <div className="w-9 h-9 rounded-full overflow-hidden ring-1 ring-border/50 shrink-0">
-                {u.picture ? (
-                  <Image src={u.picture} alt={u.name} width={36} height={36} unoptimized className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
-                    {u.name.charAt(0).toUpperCase()}
-                  </div>
-                )}
-              </div>
-
-              {/* Name + email */}
-              <div className="pl-3 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">{u.name}</p>
-                <p className="text-[11px] text-muted-foreground truncate">{u.email}</p>
-              </div>
-
-              {/* Role selector */}
-              <div className="px-4">
-                <select
-                  value={u.role}
-                  onChange={(e) => handleRoleChange(u.id, e.target.value as Role)}
-                  disabled={!!updating}
-                  className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border cursor-pointer outline-none appearance-none ${ROLE_STYLE[u.role]}`}
-                >
-                  {ROLES.map((r) => (
-                    <option key={r} value={r}>{r}</option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Loading indicator */}
-              <div className="w-8 flex justify-center">
-                {updating === u.id && <Loader2 size={14} className="animate-spin text-primary" />}
-                {updating !== u.id && <ShieldCheck size={14} className="text-border" />}
-              </div>
-            </motion.div>
+              user={u}
+              index={idx}
+              isUpdating={updating === u.id}
+              onRoleChange={handleRoleChange}
+              canViewHistory={canViewHistory}
+              liveLog={liveRoleLogs.get(u.id)}
+            />
           ))}
         </div>
       </div>
     </div>
+  );
+}
+
+// ── UserRow Component ──────────────────────────────────────────────────────────
+
+interface UserRowProps {
+  user: User;
+  index: number;
+  isUpdating: boolean;
+  onRoleChange: (userId: string, newRole: Role) => void;
+  canViewHistory: boolean;
+  liveLog?: UserRoleLog;
+}
+
+function UserRow({ user, index, isUpdating, onRoleChange, canViewHistory, liveLog }: UserRowProps) {
+  const [open,        setOpen]        = useState(false);
+  const [logsOpen,    setLogsOpen]    = useState(false);
+  const [logs,        setLogs]        = useState<UserRoleLog[] | null>(null);
+  const [logsLoading, setLogsLoading] = useState(false);
+  const isPending = user.role === "Pending";
+
+  // Append live log when SignalR pushes a new entry
+  useEffect(() => {
+    if (!liveLog) return;
+    setLogs((prev) => prev ? [liveLog, ...prev.filter(l => l.id !== liveLog.id)] : [liveLog]);
+  }, [liveLog]);
+
+  async function handleToggleLogs() {
+    setLogsOpen((v) => !v);
+    if (logs !== null) return;
+    setLogsLoading(true);
+    try {
+      const r = await api.get<{ data: UserRoleLog[] }>(`/users/${user.id}/role-logs`);
+      setLogs(r.data.data);
+    } catch { setLogs([]); }
+    finally { setLogsLoading(false); }
+  }
+
+  return (
+    <motion.div
+      layout
+      className={`col-span-4 ${isPending ? "bg-amber-500/[0.03]" : ""}`}
+      style={{ zIndex: 50 - index }}
+    >
+      {/* Main row */}
+      <div className={`grid grid-cols-[auto_1fr_auto_auto] items-center px-5 py-4 hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition-all relative`}>
+        {isPending && (
+          <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500" />
+        )}
+
+        {/* Avatar */}
+        <div className="relative shrink-0">
+          <div className="w-10 h-10 rounded-full overflow-hidden ring-1 ring-border/50">
+            {user.picture ? (
+              <img src={user.picture} alt={user.name} className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+            )}
+          </div>
+          {isPending && (
+            <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse" />
+          )}
+        </div>
+
+        {/* Name + email + history button */}
+        <div className="pl-4 min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="text-sm font-semibold text-foreground truncate">{user.name}</p>
+            {isPending && (
+              <span className="text-[9px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                Ação Requerida
+              </span>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
+            {canViewHistory && (
+              <button
+                onClick={handleToggleLogs}
+                className={`inline-flex items-center gap-1 text-[9px] font-medium px-1.5 py-0.5 rounded border transition-colors ${
+                  logsOpen ? "bg-primary/10 text-primary border-primary/20" : "text-muted-foreground border-border/40 hover:bg-slate-100 dark:hover:bg-white/5"
+                }`}
+              >
+                {logsLoading ? <Loader2 size={9} className="animate-spin" /> : <History size={9} />}
+                Histórico
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Role selector */}
+        <div className="px-4 relative">
+          <button
+            onClick={() => setOpen(!open)}
+            disabled={isUpdating}
+            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all ${ROLE_STYLE[user.role]} ${open ? "ring-2 ring-primary/20" : ""}`}
+          >
+            {user.role}
+            <ChevronDown size={12} className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
+          </button>
+
+          <AnimatePresence>
+            {open && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+                <motion.div
+                  initial={{ opacity: 0, y: 8, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 8, scale: 0.95 }}
+                  className="absolute right-0 top-full mt-2 w-44 bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-2xl z-50 py-1.5 overflow-hidden"
+                >
+                  {ROLES.map((r) => {
+                    const isSelected = user.role === r;
+                    return (
+                      <button
+                        key={r}
+                        onClick={() => { onRoleChange(user.id, r); setOpen(false); }}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${isSelected ? "text-primary" : "text-foreground"}`}
+                      >
+                        <div className="flex items-center gap-2">
+                          <div className={`w-1.5 h-1.5 rounded-full ${ROLE_STYLE[r].split(" ")[0]}`} />
+                          {r}
+                        </div>
+                        {isSelected && <Check size={12} />}
+                      </button>
+                    );
+                  })}
+                </motion.div>
+              </>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Status icon */}
+        <div className="w-8 flex justify-center">
+          {isUpdating ? (
+            <Loader2 size={14} className="animate-spin text-primary" />
+          ) : isPending ? (
+            <AlertCircle size={14} className="text-amber-500" />
+          ) : (
+            <ShieldCheck size={14} className="text-emerald-500/50" />
+          )}
+        </div>
+      </div>
+
+      {/* Logs section */}
+      <AnimatePresence>
+        {logsOpen && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            className="overflow-hidden"
+          >
+            <div className="px-5 pb-3 border-t border-border/20 pt-2 bg-slate-50/50 dark:bg-white/[0.01]">
+              <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-1">
+                <History size={10} />Histórico de roles
+              </p>
+              {logsLoading ? (
+                <div className="flex items-center gap-2 text-muted-foreground py-1">
+                  <Loader2 size={12} className="animate-spin" /><span className="text-[11px]">Carregando...</span>
+                </div>
+              ) : (logs ?? []).length === 0 ? (
+                <p className="text-[11px] text-muted-foreground">Nenhuma alteração de role registrada.</p>
+              ) : (
+                <div className="flex flex-col gap-1.5">
+                  {(logs ?? []).map((log) => (
+                    <div key={log.id} className="flex items-start gap-2">
+                      <div className="w-1.5 h-1.5 rounded-full bg-border mt-1.5 shrink-0" />
+                      <div className="text-[11px]">
+                        <span className={`font-semibold ${ROLE_STYLE[log.roleAnterior as Role]?.split(" ")[1] ?? "text-muted-foreground"}`}>{log.roleAnterior}</span>
+                        <span className="text-muted-foreground"> → </span>
+                        <span className={`font-semibold ${ROLE_STYLE[log.roleNova as Role]?.split(" ")[1] ?? "text-foreground"}`}>{log.roleNova}</span>
+                        <span className="text-muted-foreground"> por </span>
+                        <span className="font-medium text-foreground">{log.changedByNome}</span>
+                        <span className="text-muted-foreground"> &lt;{log.changedByEmail}&gt;</span>
+                        <span className="text-[10px] text-muted-foreground ml-1.5">
+                          {new Date(log.criadoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 }

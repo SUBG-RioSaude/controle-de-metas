@@ -95,11 +95,30 @@ export function HeroSection() {
 
       {/* ── Cruzes decorativas ──────────────────────────────────────── */}
       {CROSSES.map(({ size, top, left, opacity }, i) => (
-        <svg key={i} width={size} height={size} viewBox="0 0 24 24"
-          className="absolute pointer-events-none" style={{ top, left, opacity }} aria-hidden>
+        <motion.svg 
+          key={i} 
+          width={size} 
+          height={size} 
+          viewBox="0 0 24 24"
+          className="absolute pointer-events-none" 
+          style={{ top, left, opacity }} 
+          aria-hidden
+          animate={{ 
+            x: [0, (i % 2 === 0 ? 20 : -20), (i % 3 === 0 ? -15 : 25), 0],
+            y: [0, (i % 2 !== 0 ? 25 : -20), (i % 3 !== 0 ? -30 : 15), 0],
+            rotate: [0, 90, 180, 270, 360],
+            scale: [1, 1.2, 1],
+            opacity: [opacity, opacity * 1.5, opacity]
+          }}
+          transition={{ 
+            duration: 15 + (i % 5) * 5, 
+            repeat: Infinity, 
+            ease: "easeInOut"
+          }}
+        >
           <rect x="10" y="1" width="4" height="22" fill="white" rx="1" />
           <rect x="1" y="10" width="22" height="4" fill="white" rx="1" />
-        </svg>
+        </motion.svg>
       ))}
 
       {/* ── Conteúdo ─────────────────────────────────────────────────── */}

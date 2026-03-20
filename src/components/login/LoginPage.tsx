@@ -39,7 +39,7 @@ export function LoginPage() {
       if (user.role === "Pending") {
         setPendingUser(user);
       } else {
-        router.push("/");
+        router.push("/dashboard");
       }
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : "Erro ao autenticar.";
@@ -52,10 +52,21 @@ export function LoginPage() {
   // Detect if there's already a pending user in context
   const { user: authUser } = useAuth();
   useEffect(() => {
+    // If we have an authUser and their role is NOT "Pending" anymore,
+    // and we were previously showing the pending screen, redirect to dashboard
+    if (authUser && authUser.role !== "Pending" && pendingUser) {
+      setPendingUser(null);
+      // Using href instead of push for this transition to ensure 
+      // cookie sync and fresh axios headers on a clean mount
+      window.location.href = "/dashboard";
+      return;
+    }
+
+    // Sync pending state
     if (authUser?.role === "Pending") {
       setPendingUser(authUser);
     }
-  }, [authUser]);
+  }, [authUser, pendingUser, router]);
 
 
   if (pendingUser) {
