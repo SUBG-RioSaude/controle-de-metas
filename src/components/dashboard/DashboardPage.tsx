@@ -13,6 +13,7 @@ import {
   BarChart3, Target, Flag, Building2,
 } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
 import { Role } from "@/lib/auth";
 
 type View = "temas" | "usuarios" | "marcos" | "setores";
@@ -99,11 +100,11 @@ export function DashboardPage() {
 
         {/* Footer */}
         <div className="px-3 py-4 border-t border-border/50 flex flex-col gap-1">
-          <a href="/"
+          <Link href="/"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5 transition-all">
             <Home size={16} />
             Página Inicial
-          </a>
+          </Link>
           <button onClick={logout}
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all">
             <LogOut size={16} />

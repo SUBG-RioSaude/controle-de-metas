@@ -755,7 +755,7 @@ function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsCha
                                                 {new Date(log.criadoEm).toLocaleString("pt-BR", { dateStyle: "short", timeStyle: "short" })}
                                               </span>
                                               {log.detalhes && (
-                                                <p className="text-[11px] text-muted-foreground mt-0.5 italic">"{log.detalhes}"</p>
+                                                <p className="text-[11px] text-muted-foreground mt-0.5 italic">&quot;{log.detalhes}&quot;</p>
                                               )}
                                             </div>
                                           </div>
