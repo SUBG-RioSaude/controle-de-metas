@@ -10,7 +10,7 @@ import { TicketWidget } from "./TicketWidget";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, Users, Home, LogOut, ChevronRight,
-  BarChart3, Target, Flag, Building2,
+  BarChart3, Target, Flag, Building2, Menu
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -29,6 +29,7 @@ const ROLE_BADGE: Record<Role, { label: string; color: string }> = {
 export function DashboardPage() {
   const { user, logout } = useAuth();
   const [view, setView]  = useState<View>("temas");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   if (!user) return null;
 
@@ -45,8 +46,20 @@ export function DashboardPage() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
+      {/* ── Mobile Overlay ── */}
+      {isMobileMenuOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 z-40 md:hidden backdrop-blur-sm" 
+          onClick={() => setIsMobileMenuOpen(false)}
+        />
+      )}
+
       {/* ── Sidebar ───────────────────────────────────────────────────────── */}
-      <aside className="w-64 shrink-0 bg-white dark:bg-slate-900 border-r border-border/50 flex flex-col">
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-64 shrink-0 bg-white dark:bg-slate-900 border-r border-border/50 flex flex-col transition-transform duration-300
+        md:relative md:translate-x-0
+        ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
+      `}>
         {/* Brand */}
         <div className="px-5 py-5 border-b border-border/50 flex items-center gap-3">
           <div className="w-8 h-8 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -84,7 +97,7 @@ export function DashboardPage() {
           {navLinks.filter((l) => l.visible).map((link) => (
             <button
               key={link.id}
-              onClick={() => setView(link.id)}
+              onClick={() => { setView(link.id); setIsMobileMenuOpen(false); }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left ${
                 view === link.id
                   ? "bg-primary/10 text-primary"
@@ -122,12 +135,18 @@ export function DashboardPage() {
       </aside>
 
       {/* ── Main content ──────────────────────────────────────────────────── */}
-      <main className="flex-1 overflow-auto">
+      <main className="flex-1 overflow-auto w-full min-w-0">
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-border/50 px-8 py-4 flex items-center gap-3">
-          <LayoutDashboard size={18} className="text-primary" />
+        <div className="sticky top-0 z-10 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-border/50 px-4 md:px-8 py-3 md:py-4 flex items-center gap-3">
+          <button 
+            className="md:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            onClick={() => setIsMobileMenuOpen(true)}
+          >
+            <Menu size={20} />
+          </button>
+          <LayoutDashboard size={18} className="text-primary hidden md:block" />
           <h1 className="text-base font-semibold text-foreground">Dashboard</h1>
-          <div className="ml-auto text-xs text-muted-foreground">Plano de Ação 2025</div>
+          <div className="ml-auto text-xs text-muted-foreground hidden sm:block">Plano de Ação 2025</div>
         </div>
 
         {/* View */}
@@ -136,7 +155,7 @@ export function DashboardPage() {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.25 }}
-          className="p-8"
+          className="p-4 md:p-8"
         >
           {view === "temas"    && <TemasView />}
           {view === "setores"  && isAdmin && <SetoresView />}

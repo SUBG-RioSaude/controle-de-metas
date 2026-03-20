@@ -332,16 +332,16 @@ export function MarcosView() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.97 }}
                     transition={{ duration: 0.22, delay: i * 0.04 }}
-                    className="bg-white dark:bg-slate-900 border border-border/50 rounded-2xl p-5 flex items-start gap-4 shadow-sm hover:shadow-md transition-all group"
+                    className="bg-white dark:bg-slate-900 border border-border/50 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 shadow-sm hover:shadow-md transition-all group relative"
                   >
                     {/* Timeline dot */}
-                    <div className={`mt-1 w-3 h-3 rounded-full border-2 shrink-0 ${overdue
+                    <div className={`hidden sm:block mt-1 w-3 h-3 rounded-full border-2 shrink-0 ${overdue
                         ? "bg-rose-400 border-rose-300"
                         : "bg-primary border-primary/40"
                       }`} />
 
                     {/* Content */}
-                    <div className="flex-1 min-w-0">
+                    <div className="flex-1 min-w-0 w-full pr-14 sm:pr-0">
                       <p className="text-sm font-semibold text-foreground leading-snug">{marco.etapa}</p>
 
                       <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -366,7 +366,7 @@ export function MarcosView() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                    <div className="absolute top-3 right-3 sm:relative sm:top-auto sm:right-auto flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0">
                       <button
                         onClick={() => openEdit(marco)}
                         className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-primary/10 text-muted-foreground hover:text-primary transition-all"

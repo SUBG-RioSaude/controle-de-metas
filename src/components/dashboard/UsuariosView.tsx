@@ -84,13 +84,13 @@ export function UsuariosView() {
           <h2 className="text-xl font-bold text-foreground">Usuários</h2>
           <p className="text-sm text-muted-foreground mt-0.5">{users.length} usuário{users.length !== 1 ? "s" : ""} cadastrado{users.length !== 1 ? "s" : ""}</p>
         </div>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar usuário..."
-            className="pl-8 pr-3 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-56"
+            className="pl-8 pr-3 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-full sm:w-56"
           />
         </div>
       </div>
@@ -98,7 +98,7 @@ export function UsuariosView() {
       <div className="bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-sm">
         <div className="grid grid-cols-[auto_1fr_auto_auto] gap-0 divide-y divide-border/40">
           {/* Header */}
-          <div className="col-span-4 grid grid-cols-[auto_1fr_auto_auto] px-5 py-3 bg-slate-50 dark:bg-white/[0.02]">
+          <div className="hidden sm:grid col-span-4 grid-cols-[auto_1fr_auto_auto] px-5 py-3 bg-slate-50 dark:bg-white/[0.02]">
             <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-10">Avatar</span>
             <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide pl-3">Nome / E-mail</span>
             <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide px-4">Role / Permissão</span>
@@ -168,59 +168,73 @@ function UserRow({ user, index, isUpdating, onRoleChange, canViewHistory, liveLo
       style={{ zIndex: 50 - index }}
     >
       {/* Main row */}
-      <div className={`grid grid-cols-[auto_1fr_auto_auto] items-center px-5 py-4 hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition-all relative`}>
+      <div className={`flex flex-col sm:grid sm:grid-cols-[auto_1fr_auto_auto] sm:items-center gap-3 sm:gap-0 px-4 sm:px-5 py-4 hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition-all relative`}>
         {isPending && (
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500" />
         )}
 
-        {/* Avatar */}
-        <div className="relative shrink-0">
-          <div className="w-10 h-10 rounded-full overflow-hidden ring-1 ring-border/50">
-            {user.picture ? (
-              <img src={user.picture} alt={user.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
-                {user.name.charAt(0).toUpperCase()}
-              </div>
-            )}
-          </div>
-          {isPending && (
-            <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse" />
-          )}
-        </div>
-
-        {/* Name + email + history button */}
-        <div className="pl-4 min-w-0">
-          <div className="flex items-center gap-2">
-            <p className="text-sm font-semibold text-foreground truncate">{user.name}</p>
+        <div className="flex items-center gap-3 w-full sm:contents">
+          {/* Avatar */}
+          <div className="relative shrink-0">
+            <div className="w-10 h-10 rounded-full overflow-hidden ring-1 ring-border/50">
+              {user.picture ? (
+                <img src={user.picture} alt={user.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-primary/10 flex items-center justify-center text-sm font-bold text-primary">
+                  {user.name.charAt(0).toUpperCase()}
+                </div>
+              )}
+            </div>
             {isPending && (
-              <span className="text-[9px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wider">
-                Ação Requerida
-              </span>
+              <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse" />
             )}
           </div>
-          <div className="flex items-center gap-2">
-            <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
-            {canViewHistory && (
-              <button
-                onClick={handleToggleLogs}
-                className={`inline-flex items-center gap-1 text-[9px] font-medium px-1.5 py-0.5 rounded border transition-colors ${
-                  logsOpen ? "bg-primary/10 text-primary border-primary/20" : "text-muted-foreground border-border/40 hover:bg-slate-100 dark:hover:bg-white/5"
-                }`}
-              >
-                {logsLoading ? <Loader2 size={9} className="animate-spin" /> : <History size={9} />}
-                Histórico
-              </button>
+
+          {/* Name + email + history button */}
+          <div className="flex-1 min-w-0 sm:pl-4">
+            <div className="flex items-center gap-2">
+              <p className="text-sm font-semibold text-foreground truncate">{user.name}</p>
+              {isPending && (
+                <span className="text-[9px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                  Ação Requerida
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-2">
+              <p className="text-[11px] text-muted-foreground truncate">{user.email}</p>
+              {canViewHistory && (
+                <button
+                  onClick={handleToggleLogs}
+                  className={`inline-flex items-center gap-1 text-[9px] font-medium px-1.5 py-0.5 rounded border transition-colors ${
+                    logsOpen ? "bg-primary/10 text-primary border-primary/20" : "text-muted-foreground border-border/40 hover:bg-slate-100 dark:hover:bg-white/5"
+                  }`}
+                >
+                  {logsLoading ? <Loader2 size={9} className="animate-spin" /> : <History size={9} />}
+                  Histórico
+                </button>
+              )}
+            </div>
+          </div>
+          
+          {/* Mobile Status icon */}
+          <div className="w-8 flex justify-center shrink-0 sm:hidden">
+            {isUpdating ? (
+              <Loader2 size={14} className="animate-spin text-primary" />
+            ) : isPending ? (
+              <AlertCircle size={14} className="text-amber-500" />
+            ) : (
+              <ShieldCheck size={14} className="text-emerald-500/50" />
             )}
           </div>
         </div>
 
         {/* Role selector */}
-        <div className="px-4 relative">
+        <div className="w-full sm:w-auto pl-12 sm:pl-0 sm:px-4 relative">
           <button
             onClick={() => setOpen(!open)}
             disabled={isUpdating}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-xl border text-[11px] font-bold transition-all ${ROLE_STYLE[user.role]} ${open ? "ring-2 ring-primary/20" : ""}`}
+            className={`inline-flex items-center justify-between sm:justify-start gap-2 h-9 sm:h-auto px-3 py-1.5 w-full sm:w-auto rounded-xl border text-[12px] sm:text-[11px] font-bold transition-all ${ROLE_STYLE[user.role]} ${open ? "ring-2 ring-primary/20" : ""}`}
+            style={{ zIndex: open ? 50 : 1 }}
           >
             {user.role}
             <ChevronDown size={12} className={`transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
@@ -229,12 +243,12 @@ function UserRow({ user, index, isUpdating, onRoleChange, canViewHistory, liveLo
           <AnimatePresence>
             {open && (
               <>
-                <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
+                <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
                 <motion.div
                   initial={{ opacity: 0, y: 8, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                  className="absolute right-0 top-full mt-2 w-44 bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-2xl z-50 py-1.5 overflow-hidden"
+                  className="absolute right-0 sm:right-auto sm:left-4 top-full mt-2 w-48 sm:w-44 bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-2xl z-50 py-1.5 overflow-hidden"
                 >
                   {ROLES.map((r) => {
                     const isSelected = user.role === r;
@@ -242,7 +256,7 @@ function UserRow({ user, index, isUpdating, onRoleChange, canViewHistory, liveLo
                       <button
                         key={r}
                         onClick={() => { onRoleChange(user.id, r); setOpen(false); }}
-                        className={`w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${isSelected ? "text-primary" : "text-foreground"}`}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-[12px] sm:text-[11px] font-semibold transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${isSelected ? "text-primary" : "text-foreground"}`}
                       >
                         <div className="flex items-center gap-2">
                           <div className={`w-1.5 h-1.5 rounded-full ${ROLE_STYLE[r].split(" ")[0]}`} />
@@ -258,8 +272,8 @@ function UserRow({ user, index, isUpdating, onRoleChange, canViewHistory, liveLo
           </AnimatePresence>
         </div>
 
-        {/* Status icon */}
-        <div className="w-8 flex justify-center">
+        {/* Status icon (Desktop) */}
+        <div className="w-8 justify-center hidden sm:flex">
           {isUpdating ? (
             <Loader2 size={14} className="animate-spin text-primary" />
           ) : isPending ? (

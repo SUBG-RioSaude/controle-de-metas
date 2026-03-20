@@ -307,6 +307,8 @@ function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsCha
   const [hasFetched, setHasFetched]     = useState(false);
   const [docLoading, setDocLoading]     = useState(false);
   const [isUploading, setIsUploading]   = useState(false);
+  const [isDragging, setIsDragging]     = useState(false);
+  const [draggedFile, setDraggedFile]   = useState<File | null>(null);
   // Return modal state
   const [returnDocId, setReturnDocId]   = useState<string | null>(null);
   const [returnComment, setReturnComment] = useState("");
@@ -356,10 +358,10 @@ function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsCha
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expanded]);
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  async function uploadFile(file: File) {
     setIsUploading(true);
+    setDraggedFile(null);
+    if (!expanded) setExpanded(true);
     const formData = new FormData();
     formData.append("file", file);
     try {
@@ -375,6 +377,11 @@ function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsCha
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) uploadFile(file);
   }
 
   async function handleReuploadChange(e: React.ChangeEvent<HTMLInputElement>) {
@@ -479,6 +486,39 @@ function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsCha
 
   return (
     <>
+      {/* Modal confirm upload dnd */}
+      <Dialog open={!!draggedFile} onOpenChange={(o) => { if (!o) setDraggedFile(null); }}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Confirmar Upload</DialogTitle></DialogHeader>
+          <div className="py-4 flex flex-col gap-3">
+            <p className="text-sm text-foreground">
+              Confirme os dados do documento que será enviado:
+            </p>
+            <div className="bg-slate-50 dark:bg-slate-900/50 border border-border/50 rounded-lg p-3 space-y-2">
+              <div>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Arquivo</span>
+                <p className="text-xs font-semibold text-foreground break-all line-clamp-2 mt-0.5" title={draggedFile?.name}>
+                  {draggedFile?.name}
+                </p>
+              </div>
+              <div>
+                <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Etapa Destino</span>
+                <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5" title={topico.descricao}>
+                  {topico.descricao}
+                </p>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDraggedFile(null)} disabled={isUploading}>Cancelar</Button>
+            <Button onClick={() => { if (draggedFile) uploadFile(draggedFile); }} disabled={isUploading}>
+              {isUploading ? <Loader2 size={16} className="animate-spin mr-2" /> : <Upload size={16} className="mr-2" />}
+              Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Modal devolução */}
       <Dialog open={!!returnDocId} onOpenChange={(o) => { if (!o) { setReturnDocId(null); setReturnComment(""); } }}>
         <DialogContent>
@@ -503,38 +543,81 @@ function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsCha
         </DialogContent>
       </Dialog>
 
-      <div className="border border-border/50 rounded-xl">
+      <div 
+        className={`border border-border/50 rounded-xl relative overflow-hidden transition-all duration-300 ${
+           isDragging ? "ring-2 ring-primary border-primary shadow-lg scale-[1.01]" : ""
+        }`}
+        onDragOver={(e) => { e.preventDefault(); if (canUpload && !isDragging) setIsDragging(true); }}
+        onDragLeave={(e) => { e.preventDefault(); if(!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragging(false); }}
+        onDrop={(e) => {
+          e.preventDefault();
+          setIsDragging(false);
+          if (!canUpload) return;
+          const file = e.dataTransfer.files?.[0];
+          if (file) setDraggedFile(file);
+        }}
+      >
+        {isDragging && (
+          <div className="absolute inset-0 z-50 bg-primary/5 backdrop-blur-[2px] flex items-center justify-center pointer-events-none">
+            {expanded ? (
+              <div className="bg-white dark:bg-slate-900 border-2 border-dashed border-primary p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-3">
+                 <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center animate-bounce">
+                   <Upload size={24} className="text-primary" />
+                 </div>
+                 <div className="text-center">
+                   <p className="text-sm font-bold text-primary">Solte o arquivo aqui</p>
+                   <p className="text-[11px] text-muted-foreground mt-1 line-clamp-1 max-w-[250px]">Etapa: {topico.descricao}</p>
+                 </div>
+              </div>
+            ) : (
+              <div className="bg-white dark:bg-slate-900 border-2 border-dashed border-primary px-5 py-3 rounded-xl shadow-2xl flex items-center gap-4 w-[min(90%,400px)]">
+                 <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center animate-bounce shrink-0">
+                   <Upload size={18} className="text-primary" />
+                 </div>
+                 <div className="flex-1 min-w-0">
+                   <p className="text-[13px] font-bold text-primary">Solte o arquivo aqui</p>
+                   <p className="text-[10px] text-muted-foreground mt-0.5 truncate" title={topico.descricao}>Etapa: {topico.descricao}</p>
+                 </div>
+              </div>
+            )}
+          </div>
+        )}
         <div
           role="button"
           tabIndex={0}
           onClick={() => setExpanded((e) => !e)}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setExpanded((ex) => !ex); }}
-          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors text-left cursor-pointer"
+          className="w-full flex flex-col sm:flex-row sm:items-center gap-2 md:gap-3 px-3 md:px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors text-left cursor-pointer"
         >
-          <motion.div animate={{ rotate: expanded ? 90 : 0 }} transition={{ duration: 0.2 }}>
-            <ChevronRight size={14} className="text-muted-foreground shrink-0" />
-          </motion.div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-foreground leading-snug line-clamp-2">{topico.descricao}</p>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="text-[11px] text-muted-foreground">{topico.setorResponsavel}</span>
-              <span className="text-[11px] text-muted-foreground">·</span>
-              <span className="text-[11px] text-primary font-medium">{done}/{total} concluídas</span>
-              {documents.length > 0 && (
-                <>
-                  <span className="text-[11px] text-muted-foreground">·</span>
-                  <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <Paperclip size={10} />{documents.length} doc{documents.length !== 1 ? "s" : ""}
-                  </span>
-                </>
-              )}
+          <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+            <motion.div animate={{ rotate: expanded ? 90 : 0 }} transition={{ duration: 0.2 }} className="mt-0.5 sm:mt-0 shrink-0">
+              <ChevronRight size={14} className="text-muted-foreground" />
+            </motion.div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium text-foreground leading-snug line-clamp-2">{topico.descricao}</p>
+              <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-1.5">
+                <span className="text-[11px] text-muted-foreground max-w-[140px] sm:max-w-none truncate">{topico.setorResponsavel}</span>
+                <span className="text-[11px] text-muted-foreground hidden sm:inline">·</span>
+                <span className="text-[11px] text-primary font-medium hidden sm:inline">{done}/{total} concluídas</span>
+                {documents.length > 0 && (
+                  <>
+                    <span className="text-[11px] text-muted-foreground hidden sm:inline">·</span>
+                    <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground">
+                      <Paperclip size={10} />{documents.length} doc{documents.length !== 1 ? "s" : ""}
+                    </span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="w-16 h-1.5 bg-border rounded-full overflow-hidden">
-              <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
+          <div className="flex items-center justify-between sm:justify-end gap-2 shrink-0 pl-7 sm:pl-0 mt-1 sm:mt-0">
+            <span className="text-[11px] text-primary font-medium sm:hidden">{done}/{total} conc.</span>
+            <div className="flex items-center gap-2">
+              <div className="w-16 h-1.5 bg-border rounded-full overflow-hidden hidden sm:block">
+                <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
+              </div>
+              <span className="text-[11px] font-medium text-muted-foreground w-7 text-right">{pct}%</span>
             </div>
-            <span className="text-[11px] font-medium text-muted-foreground w-7 text-right">{pct}%</span>
           </div>
         </div>
 
@@ -560,7 +643,7 @@ function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsCha
                     </Button>
                   )}
                 </div>
-                {topico.metas.map((meta) => (
+                {[...topico.metas].sort((a, b) => a.descricao.localeCompare(b.descricao)).map((meta) => (
                   <MetaCard key={meta.id} meta={meta} liveStatus={liveStatuses.get(meta.id)} liveLog={liveMetaLogs?.get(meta.id)} />
                 ))}
                 {topico.metas.length === 0 && (
@@ -597,7 +680,7 @@ function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsCha
                       <Loader2 size={14} className="animate-spin text-primary/60" />
                       <span className="text-xs font-medium">Buscando documentos...</span>
                     </div>
-                  ) : documents.length === 0 ? (
+                  ) : documents.length === 0 && !isUploading ? (
                     <div className="flex flex-col items-center justify-center py-6 border border-dashed border-border/60 rounded-xl bg-white/50 dark:bg-slate-950/20">
                       <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2">
                         <Paperclip size={14} className="text-muted-foreground/60" />
@@ -606,30 +689,43 @@ function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsCha
                     </div>
                   ) : (
                     <div className="flex flex-col gap-2">
+                      {isUploading && (
+                        <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-dashed border-primary/40 p-3 flex items-center gap-3 animate-pulse">
+                          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                             <Loader2 size={14} className="text-primary animate-spin" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                             <p className="text-[12px] font-semibold text-primary">Enviando documento...</p>
+                             <p className="text-[10px] text-muted-foreground mt-0.5">Aguarde o final do processo.</p>
+                          </div>
+                        </div>
+                      )}
                       {documents.map((doc) => {
                         const st = DOC_STATUS[doc.status];
                         return (
                           <div key={doc.id} className="rounded-xl bg-white dark:bg-slate-950 border border-border/50 p-3 flex flex-col gap-2">
                             {/* Row 1: icon + name + status badge */}
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-start sm:items-center gap-3">
                               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                                 <FileText size={14} className="text-primary" />
                               </div>
-                              <div className="flex-1 min-w-0">
-                                <a
-                                  href={doc.status === "Aprovado" ? (doc.driveOficialUrl ?? doc.driveUrl) : doc.driveUrl}
-                                  target="_blank" rel="noopener noreferrer"
-                                  className="block text-[12px] font-semibold text-foreground hover:text-primary transition-colors truncate"
-                                >
-                                  {doc.nome}
-                                </a>
-                                <span className="text-[9px] text-muted-foreground uppercase tracking-wider">
-                                  {new Date(doc.uploadedAt).toLocaleDateString("pt-BR")}
+                              <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-center justify-between gap-1 sm:gap-3">
+                                <div className="min-w-0">
+                                  <a
+                                    href={doc.status === "Aprovado" ? (doc.driveOficialUrl ?? doc.driveUrl) : doc.driveUrl}
+                                    target="_blank" rel="noopener noreferrer"
+                                    className="block text-[12px] font-semibold text-foreground hover:text-primary transition-colors truncate"
+                                  >
+                                    {doc.nome}
+                                  </a>
+                                  <span className="text-[9px] text-muted-foreground uppercase tracking-wider block mt-0.5 sm:mt-0">
+                                    {new Date(doc.uploadedAt).toLocaleDateString("pt-BR")}
+                                  </span>
+                                </div>
+                                <span className={`self-start sm:self-auto shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${st.color}`}>
+                                  {st.label}
                                 </span>
                               </div>
-                              <span className={`shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full border ${st.color}`}>
-                                {st.label}
-                              </span>
                             </div>
 
                             {/* Row 2: rejection comment */}
@@ -1096,7 +1192,7 @@ export function TemasView() {
         <p className="text-sm text-muted-foreground text-center py-8">Nenhum tema encontrado.</p>
       )}
 
-      {temas.map((tema) => {
+      {[...temas].sort((a, b) => a.nome.localeCompare(b.nome)).map((tema) => {
         const isOpen    = expanded === tema.id;
         const allMetas  = tema.topicos.flatMap((t) => t.metas);
         const done      = allMetas.filter((m) => m.status === "Concluido").length;
@@ -1111,18 +1207,24 @@ export function TemasView() {
               tabIndex={0}
               onClick={() => setExpanded(isOpen ? null : tema.id)}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setExpanded(isOpen ? null : tema.id); }}
-              className="w-full flex items-center gap-4 px-5 py-4 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors text-left cursor-pointer"
+              className="w-full flex flex-col sm:flex-row sm:items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-4 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors text-left cursor-pointer"
             >
-              <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
-                <Target size={16} className="text-primary" />
+              <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Target size={16} className="text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-foreground leading-tight">{tema.nome}</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {tema.topicos.length} meta{tema.topicos.length !== 1 ? "s" : ""} · {total} objetivo{total !== 1 ? "s" : ""}
+                  </p>
+                </div>
+                <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }} className="sm:hidden shrink-0 mt-1">
+                  <ChevronDown size={16} className="text-muted-foreground" />
+                </motion.div>
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-foreground">{tema.nome}</p>
-                <p className="text-[11px] text-muted-foreground mt-0.5">
-                  {tema.topicos.length} meta{tema.topicos.length !== 1 ? "s" : ""} · {total} objetivo{total !== 1 ? "s" : ""}
-                </p>
-              </div>
-              <div className="flex items-center gap-3 shrink-0">
+
+              <div className="flex items-center gap-3 sm:shrink-0 justify-between sm:justify-end mt-1 sm:mt-0 pl-12 sm:pl-0">
                 {user?.role === "Admin" && (
                   <>
                     <Button 
@@ -1136,21 +1238,24 @@ export function TemasView() {
                       }}
                     >
                       <Plus size={14} />
-                      Nova Meta
+                      <span className="hidden sm:inline">Nova Meta</span>
+                      <span className="sm:hidden">Meta</span>
                     </Button>
-                    <div className="w-px h-8 bg-border/40 mx-1" />
+                    <div className="w-px h-8 bg-border/40 mx-1 hidden sm:block" />
                   </>
                 )}
-                <div className="text-right">
-                  <p className="text-sm font-bold text-foreground">{pct}%</p>
-                  <p className="text-[10px] text-muted-foreground">{done}/{total}</p>
+                <div className="flex items-center gap-3">
+                  <div className="text-right flex items-center gap-2 sm:block">
+                    <p className="text-sm font-bold text-foreground">{pct}%</p>
+                    <p className="text-[10px] text-muted-foreground hidden sm:block">{done}/{total}</p>
+                  </div>
+                  <div className="w-16 md:w-20 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden hidden sm:block">
+                    <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
+                  </div>
+                  <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }} className="hidden sm:block">
+                    <ChevronDown size={16} className="text-muted-foreground" />
+                  </motion.div>
                 </div>
-                <div className="w-20 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-                  <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
-                </div>
-                <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }}>
-                  <ChevronDown size={16} className="text-muted-foreground" />
-                </motion.div>
               </div>
             </div>
 
@@ -1165,7 +1270,7 @@ export function TemasView() {
                   className="overflow-hidden"
                 >
                   <div className="px-4 pb-4 flex flex-col gap-2 border-t border-border/40 pt-3">
-                    {tema.topicos.map((t) => (
+                    {[...tema.topicos].sort((a, b) => a.descricao.localeCompare(b.descricao)).map((t) => (
                       <TopicoCard
                         key={t.id}
                         topico={t}
