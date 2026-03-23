@@ -19,6 +19,9 @@ COPY . .
 
 ENV NEXT_TELEMETRY_DISABLED=1
 
+ARG NEXT_PUBLIC_METAS_API
+ENV NEXT_PUBLIC_METAS_API=$NEXT_PUBLIC_METAS_API
+
 RUN npm run build
 
 # ── Runner ────────────────────────────────────────────────────────────────────
