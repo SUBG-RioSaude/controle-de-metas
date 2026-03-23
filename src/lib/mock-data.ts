@@ -70,6 +70,7 @@ const generateEtapas = (): Etapa[] => {
       etapas.push({
         id: String(id),
         plan_id: plan.id,
+        topico_id: "",
         step_number: i,
         description: `Etapa ${i} do plano ${plan.code} — ${["Elaborar documentação", "Realizar levantamento", "Implementar controle", "Validar conformidade", "Publicar relatório", "Capacitar equipe", "Mapear processos"][i % 7]}`,
         tema: `${i} – ${plan.title}`,

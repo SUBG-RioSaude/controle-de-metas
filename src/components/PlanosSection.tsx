@@ -13,7 +13,16 @@ import {
   type PlanoDeAcao,
   type Etapa,
   META_STATUS_CONFIG,
+  STATUS_LIST,
 } from "@/lib/types";
+
+const ETAPA_STATUS_DOT: Record<string, string> = {
+  "Não Iniciada": "bg-white/30",
+  "Em Andamento": "bg-yellow-300",
+  "Concluída": "bg-emerald-400",
+  "Documento Gerado": "bg-[#42b9eb]",
+  "Aguardando retorno da área": "bg-orange-400",
+};
 import { StatusBadge } from "./StatusBadge";
 import { AnimatedCounter } from "./AnimatedCounter";
 import SpotlightCard from "@/components/SpotlightCard";
@@ -31,8 +40,10 @@ import {
   Target,
   LayoutGrid,
   Layers,
+  PanelRightOpen,
   X,
   ChevronsUpDown,
+  Search,
 } from "lucide-react";
 import { ScrollIndicator } from "@/components/ui/ScrollIndicator";
 
@@ -73,6 +84,7 @@ function temaToEtapas(tema: ApiTema, code: string): Etapa[] {
       etapas.push({
         id: meta.id,
         plan_id: tema.id,
+        topico_id: topico.id,
         step_number: stepIndex + 1,
         description: meta.descricao,
         tema: topico.descricao,
@@ -156,11 +168,11 @@ function TopicoAccordionItem({
   return (
     <Accordion.Item
       value={itemValue}
-      className="border border-white/[0.07] rounded-xl overflow-hidden group/item"
+      className="border rounded-xl overflow-hidden group/item transition-all duration-200 border-white/[0.07] data-[state=open]:border-[#42b9eb]/30 data-[state=open]:shadow-[0_0_0_1px_rgba(66,185,235,0.08),0_0_24px_rgba(66,185,235,0.06)]"
     >
-      <Accordion.Trigger className="w-full flex items-start gap-3 px-4 py-3.5 text-left hover:bg-white/[0.04] data-[state=open]:bg-white/[0.04] transition-colors">
+      <Accordion.Trigger className="w-full flex items-start gap-3 px-4 py-3.5 text-left hover:bg-white/[0.04] data-[state=open]:bg-[#42b9eb]/[0.04] transition-colors">
         {/* Número */}
-        <span className="shrink-0 mt-0.5 w-5 h-5 flex items-center justify-center rounded bg-white/[0.06] border border-white/[0.08] text-[10px] font-mono font-semibold text-white/40 tabular-nums">
+        <span className="shrink-0 mt-0.5 w-5 h-5 flex items-center justify-center rounded text-[10px] font-mono font-semibold tabular-nums transition-colors duration-200 bg-white/[0.06] border border-white/[0.08] text-white/40 group-data-[state=open]/item:bg-[#42b9eb]/10 group-data-[state=open]/item:border-[#42b9eb]/30 group-data-[state=open]/item:text-[#42b9eb]">
           {String(index + 1).padStart(2, "0")}
         </span>
 
@@ -257,10 +269,12 @@ function TemaSheet({
   tema,
   open,
   onClose,
+  defaultOpenTopico,
 }: {
   tema: ApiTema | null;
   open: boolean;
   onClose: () => void;
+  defaultOpenTopico?: string;
 }) {
   const todasMetas = tema?.topicos.flatMap((t) => t.metas) ?? [];
   const total = todasMetas.length;
@@ -331,7 +345,7 @@ function TemaSheet({
         {/* Accordion de tópicos — scroll independente */}
         <div className="flex-1 overflow-y-auto overscroll-contain px-6 py-5">
           {tema && tema.topicos.length > 0 ? (
-            <Accordion.Root type="single" collapsible className="space-y-2">
+            <Accordion.Root type="single" collapsible className="space-y-2" defaultValue={defaultOpenTopico}>
               {[...tema.topicos].sort((a, b) => {
                   const n = (s: string) => { const m = s.match(/Etapa\s+(\d+)/i); return m ? parseInt(m[1], 10) : 9999; };
                   return n(a.descricao) - n(b.descricao);
@@ -477,9 +491,12 @@ function TemaCard({
 export function PlanosSection() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [sheetId, setSheetId] = useState<string | null>(null);
+  const [sheetOpenTopico, setSheetOpenTopico] = useState<string | undefined>(undefined);
   const [page, setPage] = useState(1);
   const [mounted, setMounted] = useState(false);
   const [tableLoading, setTableLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<EtapaStatus | "all">("all");
   const prevSelectedId = useRef<string | null>(null);
   useEffect(() => setMounted(true), []);
 
@@ -517,8 +534,17 @@ export function PlanosSection() {
       const num = (s: string) => { const m = s.match(/Etapa\s+(\d+)/i); return m ? parseInt(m[1], 10) : 9999; };
       return num(a.tema) - num(b.tema);
     });
-  const totalPages = Math.ceil(planEtapas.length / PAGE_SIZE);
-  const pagedEtapas = planEtapas.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const q = searchQuery.trim().toLowerCase();
+  const filteredEtapas = planEtapas.filter((e) => {
+    const matchesSearch = !q ||
+      e.description.toLowerCase().includes(q) ||
+      e.tema.toLowerCase().includes(q) ||
+      e.area.toLowerCase().includes(q);
+    const matchesStatus = statusFilter === "all" || e.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+  const totalPages = Math.ceil(filteredEtapas.length / PAGE_SIZE);
+  const pagedEtapas = filteredEtapas.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const completed = planEtapas.filter(
     (e) => e.status === "Concluída" || e.status === "Documento Gerado"
   ).length;
@@ -596,6 +622,8 @@ export function PlanosSection() {
                   onClick={() => {
                     setSelectedId(selectedId === tema.id ? null : tema.id);
                     setPage(1);
+                    setSearchQuery("");
+                    setStatusFilter("all");
                   }}
                   onOpenSheet={() => setSheetId(tema.id)}
                 />
@@ -642,13 +670,64 @@ export function PlanosSection() {
                     </div>
                   </div>
 
+                  {/* Busca + filtros */}
+                  <div className="flex flex-col sm:flex-row gap-3 mb-3">
+                    {/* Input de busca */}
+                    <div className="relative flex-1">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/25 pointer-events-none" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+                        placeholder="Buscar por descrição, tema ou área…"
+                        className="w-full pl-8 pr-8 py-2 text-xs bg-white/[0.04] border border-white/[0.08] rounded-xl text-white/70 placeholder:text-white/20 focus:outline-none focus:border-[#42b9eb]/30 focus:bg-white/[0.06] transition-all"
+                      />
+                      {searchQuery && (
+                        <button
+                          onClick={() => { setSearchQuery(""); setPage(1); }}
+                          className="absolute right-2.5 top-1/2 -translate-y-1/2 text-white/25 hover:text-white/60 transition-colors"
+                        >
+                          <X className="w-3 h-3" />
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Pills de status */}
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <button
+                        onClick={() => { setStatusFilter("all"); setPage(1); }}
+                        className={`px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+                          statusFilter === "all"
+                            ? "bg-white/[0.08] border-white/20 text-white/70"
+                            : "border-white/[0.06] text-white/25 hover:text-white/50 hover:border-white/[0.12]"
+                        }`}
+                      >
+                        Todos
+                      </button>
+                      {STATUS_LIST.map((s) => (
+                        <button
+                          key={s}
+                          onClick={() => { setStatusFilter(s); setPage(1); }}
+                          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-medium border transition-all ${
+                            statusFilter === s
+                              ? "bg-white/[0.08] border-white/20 text-white/70"
+                              : "border-white/[0.06] text-white/25 hover:text-white/50 hover:border-white/[0.12]"
+                          }`}
+                        >
+                          <span className={`w-1.5 h-1.5 rounded-full shrink-0 ${ETAPA_STATUS_DOT[s] ?? "bg-white/30"}`} />
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Tabela de etapas */}
-                  <div className="glass-panel overflow-hidden">
-                    <div className="overflow-x-auto">
+                  <div className="glass-panel">
+                    <div className="w-full">
                       <table className="w-full text-xs">
                         <thead>
                           <tr className="border-b border-border/50">
-                            {["Etapa", "Descritivo", "Tema", "Área", "Prazo", "Status", "Doc.", "Link"].map(
+                            {["Etapa", "Descritivo", "Tema", "Área", "Prazo", "Status", "Doc.", "Link", ""].map(
                               (h) => (
                                 <th
                                   key={h}
@@ -672,6 +751,7 @@ export function PlanosSection() {
                                 <td className="px-4 py-3"><div className="h-5 w-20 rounded-full bg-white/[0.06] animate-pulse" /></td>
                                 <td className="px-4 py-3"><div className="h-3 w-8 rounded bg-white/[0.06] animate-pulse" /></td>
                                 <td className="px-4 py-3"><div className="h-3 w-4 rounded bg-white/[0.06] animate-pulse" /></td>
+                                <td className="px-4 py-3"><div className="h-6 w-6 rounded bg-white/[0.06] animate-pulse" /></td>
                               </tr>
                             ))
                           ) : pagedEtapas.map((etapa, i) => {
@@ -714,7 +794,7 @@ export function PlanosSection() {
                                     </Tooltip>
                                   </TooltipProvider>
                                 </td>
-                                <td className="px-4 py-2.5 text-muted-foreground">{etapa.area}</td>
+                                <td className="px-4 py-2.5 text-muted-foreground max-w-[140px] truncate" title={etapa.area}>{etapa.area}</td>
                                 <td className="px-4 py-2.5 text-muted-foreground whitespace-nowrap">
                                   {etapa.prazo}
                                 </td>
@@ -738,11 +818,36 @@ export function PlanosSection() {
                                     <span className="text-muted-foreground/40">—</span>
                                   )}
                                 </td>
+                                <td className="px-4 py-2.5">
+                                  <button
+                                    onClick={() => {
+                                      setSheetId(etapa.plan_id);
+                                      setSheetOpenTopico(`${etapa.plan_id}-${etapa.topico_id}`);
+                                    }}
+                                    title="Ver tópico no sheet"
+                                    className="flex items-center justify-center w-6 h-6 rounded-md border border-white/[0.08] text-white/25 hover:text-[#42b9eb] hover:border-[#42b9eb]/30 hover:bg-[#42b9eb]/[0.07] transition-all"
+                                  >
+                                    <PanelRightOpen className="w-3 h-3" />
+                                  </button>
+                                </td>
                               </motion.tr>
                             );
                           })}
                         </tbody>
                       </table>
+
+                      {!tableLoading && filteredEtapas.length === 0 && (
+                        <div className="flex flex-col items-center justify-center py-12 gap-2">
+                          <Search className="w-5 h-5 text-white/15" />
+                          <p className="text-xs text-white/25">Nenhuma etapa encontrada para este filtro.</p>
+                          <button
+                            onClick={() => { setSearchQuery(""); setStatusFilter("all"); }}
+                            className="text-[11px] text-[#42b9eb]/50 hover:text-[#42b9eb] transition-colors mt-1"
+                          >
+                            Limpar filtros
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {/* Paginação */}
@@ -751,10 +856,10 @@ export function PlanosSection() {
                         <span className="text-xs text-muted-foreground">
                           Etapas{" "}
                           <span className="font-medium text-foreground">
-                            {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, planEtapas.length)}
+                            {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filteredEtapas.length)}
                           </span>{" "}
                           de{" "}
-                          <span className="font-medium text-foreground">{planEtapas.length}</span>
+                          <span className="font-medium text-foreground">{filteredEtapas.length}</span>
                         </span>
 
                         <div className="flex items-center gap-1">
@@ -799,7 +904,8 @@ export function PlanosSection() {
             <TemaSheet
               tema={sheetTema}
               open={sheetTema !== null}
-              onClose={() => setSheetId(null)}
+              onClose={() => { setSheetId(null); setSheetOpenTopico(undefined); }}
+              defaultOpenTopico={sheetOpenTopico}
             />
           </>
         )}

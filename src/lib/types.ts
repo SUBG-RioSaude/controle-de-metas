@@ -17,6 +17,7 @@ export interface PlanoDeAcao {
 export interface Etapa {
   id: string;
   plan_id: string;
+  topico_id: string;
   step_number: number;
   description: string;
   tema: string;
