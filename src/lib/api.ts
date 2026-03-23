@@ -1,8 +1,27 @@
 import axios from "axios";
 import { getToken, clearAuth } from "@/lib/auth";
 
+// Declaração de tipo para o Window
+declare global {
+  interface Window {
+    __ENV__: {
+      NEXT_PUBLIC_AUTH_API?: string;
+      NEXT_PUBLIC_METAS_API?: string;
+      // Adicione outras se necessário depois
+    };
+  }
+}
+
+// Pega a variável injetada na window (Runtime Client) ou do Node (Runtime Server / Build)
+const getBaseUrl = () => {
+  if (typeof window !== "undefined") {
+    return window.__ENV__?.NEXT_PUBLIC_AUTH_API || process.env.NEXT_PUBLIC_AUTH_API;
+  }
+  return process.env.NEXT_PUBLIC_AUTH_API;
+};
+
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_AUTH_API,
+  baseURL: getBaseUrl(),
 });
 
 // Explicitly set Content-Type for every method that sends a body
