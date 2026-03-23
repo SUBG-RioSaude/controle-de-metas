@@ -14,14 +14,14 @@ import { ScrollIndicator } from "@/components/ui/ScrollIndicator";
 // Config
 // ---------------------------------------------------------------------------
 
-const ITEMS_PER_ROW = 5;
-const TODAY = new Date();
+const CARD_W = 220;
+const TODAY  = new Date();
 type MarcoStatus = "Concluído" | "Em Andamento" | "Próximo";
 
 function getMarcoStatus(isoDate: string): MarcoStatus {
   const diff = (new Date(isoDate).getTime() - TODAY.getTime()) / 86400000;
   if (diff < -1) return "Concluído";
-  if (diff <= 1) return "Em Andamento";
+  if (diff <= 1)  return "Em Andamento";
   return "Próximo";
 }
 
@@ -55,12 +55,12 @@ function MarcoCard({ marco, index, isAbove }: { marco: ApiMarco; index: number; 
       initial={{ opacity: 0, y: isAbove ? -16 : 16 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0 }}
-      transition={{ duration: 0.45, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
+      transition={{ duration: 0.45, delay: index * 0.06, ease: [0.22, 1, 0.36, 1] }}
       className="h-full"
     >
       <SpotlightCard
         spotlightColor="rgba(66, 185, 235, 0.15)"
-        className="bg-white/[0.06] border border-white/10 rounded-2xl px-6 py-5 h-full flex flex-col gap-3"
+        className="bg-white/[0.06] border border-white/10 rounded-2xl px-5 py-5 h-full flex flex-col gap-3"
       >
         <span className={`self-start inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold border ${bgColor} ${color}`}>
           <Icon className="w-3 h-3 shrink-0" />
@@ -75,7 +75,7 @@ function MarcoCard({ marco, index, isAbove }: { marco: ApiMarco; index: number; 
 
         <p className="text-[11px] text-white/40 font-mono">{formatPrazo(marco.prazo)}</p>
 
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1.5">
           {marco.responsaveis.map((r) => (
             <span key={r} className="text-[10px] text-white/50 bg-white/[0.05] border border-white/[0.08] rounded-md px-2 py-0.5">
               {r}
@@ -84,7 +84,7 @@ function MarcoCard({ marco, index, isAbove }: { marco: ApiMarco; index: number; 
         </div>
 
         {status === "Próximo" && (
-          <p className="text-[11px] text-white/30 pt-1 border-t border-white/[0.06]">
+          <p className="text-[11px] text-white/30 pt-1.5 border-t border-white/[0.06]">
             Em <span className="text-[#42b9eb] font-bold tabular-nums">{daysUntil}</span> dias
           </p>
         )}
@@ -94,92 +94,65 @@ function MarcoCard({ marco, index, isAbove }: { marco: ApiMarco; index: number; 
 }
 
 // ---------------------------------------------------------------------------
-// TimelineRow — uma fileira horizontal
+// Timeline horizontal — sem scroll, colunas dividem o espaço igualmente
 // ---------------------------------------------------------------------------
 
-function TimelineRow({
-  items,
-  globalOffset,
-  reversed,
-  slots,
-}: {
-  items: ApiMarco[];
-  globalOffset: number;
-  reversed: boolean;
-  slots: number;
-}) {
+function Timeline({ marcos }: { marcos: ApiMarco[] }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const isInView = useInView(trackRef, { once: true, amount: 0 });
-
-  // isAbove usa posição visual dentro da fileira
-  function above(localIdx: number) {
-    const vis = reversed ? slots - 1 - localIdx : localIdx;
-    return vis % 2 === 0;
-  }
-
-  // Para flex-row-reverse: iteramos na ordem original do array,
-  // mas o CSS inverte a exibição. localIdx 0 = item mais à direita.
-  const colStyle = "flex-1 min-w-0";
+  const cols = marcos.length;
+  const grid = { display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "12px" };
 
   return (
-    <div>
-      {/* Cards acima */}
-      <div className={`flex gap-4 ${reversed ? "flex-row-reverse" : ""}`}>
-        {Array.from({ length: slots }).map((_, col) => {
-          const item = items[col];
-          return (
-            <div key={col} className={`${colStyle} flex flex-col justify-end`} style={{ minHeight: 240 }}>
-              {item && above(col) && (
-                <MarcoCard marco={item} index={globalOffset + col} isAbove />
-              )}
-            </div>
-          );
-        })}
+    <div className="w-full">
+
+      {/* Cards acima — posições pares */}
+      <div style={grid}>
+        {marcos.map((marco, i) => (
+          <div key={marco.id} className="flex flex-col justify-end" style={{ minHeight: 220 }}>
+            {i % 2 === 0 && <MarcoCard marco={marco} index={i} isAbove />}
+          </div>
+        ))}
       </div>
 
       {/* Conectores superiores */}
-      <div className={`flex gap-4 ${reversed ? "flex-row-reverse" : ""}`}>
-        {Array.from({ length: slots }).map((_, col) => {
-          const item = items[col];
-          return (
-            <div key={col} className={`${colStyle} flex justify-center`} style={{ height: 28 }}>
-              {item && above(col) && (
-                <motion.div
-                  className="w-px bg-gradient-to-b from-white/25 to-white/[0.05] h-full"
-                  initial={{ scaleY: 0 }} style={{ originY: 0 } as React.CSSProperties}
-                  whileInView={{ scaleY: 1 }} viewport={{ once: true, amount: 0 }}
-                  transition={{ duration: 0.3, delay: col * 0.06 }}
-                />
-              )}
-            </div>
-          );
-        })}
+      <div style={grid}>
+        {marcos.map((marco, i) => (
+          <div key={marco.id} className="flex justify-center" style={{ height: 24 }}>
+            {i % 2 === 0 && (
+              <motion.div
+                className="w-px bg-gradient-to-b from-white/25 to-white/[0.05] h-full"
+                initial={{ scaleY: 0 }} style={{ originY: 0 } as React.CSSProperties}
+                whileInView={{ scaleY: 1 }} viewport={{ once: true, amount: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.06 }}
+              />
+            )}
+          </div>
+        ))}
       </div>
 
       {/* Trilha + nós */}
-      <div ref={trackRef} className={`relative flex items-center gap-4 py-1 ${reversed ? "flex-row-reverse" : ""}`}>
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[2px] bg-white/[0.07]" />
+      <div ref={trackRef} className="relative py-1" style={grid}>
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[2px] bg-white/[0.07]" style={{ gridColumn: `1 / -1` }} />
         <motion.div
-          className={`absolute top-1/2 -translate-y-1/2 h-[2px] bg-gradient-to-r from-[#42b9eb]/60 via-[#42b9eb] to-[#42b9eb] ${reversed ? "right-0" : "left-0"}`}
+          className="absolute left-0 top-1/2 -translate-y-1/2 h-[2px] bg-gradient-to-r from-[#42b9eb]/60 via-[#42b9eb] to-[#42b9eb]"
           initial={{ width: 0 }}
           animate={isInView ? { width: "100%" } : {}}
-          transition={{ duration: 1.2, ease: "easeOut", delay: 0.2 }}
+          transition={{ duration: 1.4, ease: "easeOut", delay: 0.2 }}
         />
-        {Array.from({ length: slots }).map((_, col) => {
-          const item = items[col];
-          if (!item) return <div key={col} className={colStyle} />;
-          const status = getMarcoStatus(item.prazo);
+        {marcos.map((marco, i) => {
+          const status = getMarcoStatus(marco.prazo);
           const { color, dotBorder, Icon } = STATUS_CONFIG[status];
           return (
-            <div key={col} className={`${colStyle} flex justify-center relative z-10`}>
+            <div key={marco.id} className="flex justify-center relative z-10">
               <motion.div
-                className={`relative w-11 h-11 rounded-full border-2 ${dotBorder} bg-[#0d2540] flex items-center justify-center`}
+                className={`relative w-9 h-9 rounded-full border-2 ${dotBorder} bg-[#0d2540] flex items-center justify-center`}
                 initial={{ scale: 0, opacity: 0 }}
                 whileInView={{ scale: 1, opacity: 1 }}
                 viewport={{ once: true, amount: 0 }}
-                transition={{ duration: 0.35, delay: col * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.35, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
               >
-                <Icon className={`w-4 h-4 ${color}`} />
+                <Icon className={`w-3.5 h-3.5 ${color}`} />
                 {status === "Em Andamento" && (
                   <motion.span
                     className="absolute inset-0 rounded-full border-2 border-yellow-300/30"
@@ -194,76 +167,47 @@ function TimelineRow({
       </div>
 
       {/* Conectores inferiores */}
-      <div className={`flex gap-4 ${reversed ? "flex-row-reverse" : ""}`}>
-        {Array.from({ length: slots }).map((_, col) => {
-          const item = items[col];
-          return (
-            <div key={col} className={`${colStyle} flex justify-center`} style={{ height: 28 }}>
-              {item && !above(col) && (
-                <motion.div
-                  className="w-px bg-gradient-to-b from-white/[0.05] to-white/25 h-full"
-                  initial={{ scaleY: 0 }} style={{ originY: 1 } as React.CSSProperties}
-                  whileInView={{ scaleY: 1 }} viewport={{ once: true, amount: 0 }}
-                  transition={{ duration: 0.3, delay: col * 0.06 }}
-                />
-              )}
-            </div>
-          );
-        })}
+      <div style={grid}>
+        {marcos.map((marco, i) => (
+          <div key={marco.id} className="flex justify-center" style={{ height: 24 }}>
+            {i % 2 !== 0 && (
+              <motion.div
+                className="w-px bg-gradient-to-b from-white/[0.05] to-white/25 h-full"
+                initial={{ scaleY: 0 }} style={{ originY: 1 } as React.CSSProperties}
+                whileInView={{ scaleY: 1 }} viewport={{ once: true, amount: 0 }}
+                transition={{ duration: 0.3, delay: i * 0.06 }}
+              />
+            )}
+          </div>
+        ))}
       </div>
 
-      {/* Cards abaixo */}
-      <div className={`flex gap-4 ${reversed ? "flex-row-reverse" : ""}`}>
-        {Array.from({ length: slots }).map((_, col) => {
-          const item = items[col];
-          return (
-            <div key={col} className={`${colStyle} flex flex-col justify-start`} style={{ minHeight: 240 }}>
-              {item && !above(col) && (
-                <MarcoCard marco={item} index={globalOffset + col} isAbove={false} />
-              )}
-            </div>
-          );
-        })}
+      {/* Cards abaixo — posições ímpares */}
+      <div style={grid}>
+        {marcos.map((marco, i) => (
+          <div key={marco.id} className="flex flex-col justify-start" style={{ minHeight: 220 }}>
+            {i % 2 !== 0 && <MarcoCard marco={marco} index={i} isAbove={false} />}
+          </div>
+        ))}
       </div>
 
       {/* Numeração */}
-      <div className={`flex gap-4 mt-3 ${reversed ? "flex-row-reverse" : ""}`}>
-        {Array.from({ length: slots }).map((_, col) => {
-          const item = items[col];
-          return (
-            <div key={col} className={`${colStyle} flex justify-center`}>
-              {item && (
-                <motion.span
-                  className="text-[10px] font-mono text-white/20 tabular-nums"
-                  initial={{ opacity: 0 }}
-                  whileInView={{ opacity: 1 }}
-                  viewport={{ once: true, amount: 0 }}
-                  transition={{ duration: 0.4, delay: col * 0.06 + 0.8 }}
-                >
-                  {String(globalOffset + col + 1).padStart(2, "0")}
-                </motion.span>
-              )}
-            </div>
-          );
-        })}
+      <div style={{ ...grid, marginTop: 8 }}>
+        {marcos.map((marco, i) => (
+          <div key={marco.id} className="flex justify-center">
+            <motion.span
+              className="text-[10px] font-mono text-white/20 tabular-nums"
+              initial={{ opacity: 0 }}
+              whileInView={{ opacity: 1 }}
+              viewport={{ once: true, amount: 0 }}
+              transition={{ duration: 0.4, delay: i * 0.06 + 0.8 }}
+            >
+              {String(i + 1).padStart(2, "0")}
+            </motion.span>
+          </div>
+        ))}
       </div>
-    </div>
-  );
-}
 
-// ---------------------------------------------------------------------------
-// Conector entre fileiras (canto direito)
-// ---------------------------------------------------------------------------
-
-function RowBridge() {
-  return (
-    <div className="flex justify-end py-2 pr-[calc(50%/5)] my-1">
-      <motion.div
-        className="w-px h-10 bg-gradient-to-b from-[#42b9eb]/40 to-[#42b9eb]/40"
-        initial={{ scaleY: 0 }} style={{ originY: 0 } as React.CSSProperties}
-        whileInView={{ scaleY: 1 }} viewport={{ once: true, amount: 0 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
-      />
     </div>
   );
 }
@@ -277,11 +221,6 @@ export function MarcosSection() {
     queryKey: ["marcos"],
     queryFn: getMarcos,
   });
-
-  const rows: ApiMarco[][] = [];
-  for (let i = 0; i < marcos.length; i += ITEMS_PER_ROW) {
-    rows.push(marcos.slice(i, i + ITEMS_PER_ROW));
-  }
 
   const statusCounts: Record<MarcoStatus, number> = { Concluído: 0, "Em Andamento": 0, Próximo: 0 };
   marcos.forEach((m) => { statusCounts[getMarcoStatus(m.prazo)]++; });
@@ -332,25 +271,13 @@ export function MarcosSection() {
 
         {/* Timeline */}
         {isLoading ? (
-          <div className="flex gap-4 animate-pulse">
-            {Array.from({ length: ITEMS_PER_ROW }).map((_, i) => (
-              <div key={i} className="flex-1 h-52 bg-white/[0.05] rounded-2xl border border-white/[0.06]" />
+          <div className="flex gap-4 animate-pulse overflow-hidden">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="shrink-0 w-[220px] h-52 bg-white/[0.05] rounded-2xl border border-white/[0.06]" />
             ))}
           </div>
         ) : (
-          <div>
-            {rows.map((row, rowIdx) => (
-              <div key={rowIdx}>
-                <TimelineRow
-                  items={row}
-                  globalOffset={rowIdx * ITEMS_PER_ROW}
-                  reversed={rowIdx % 2 !== 0}
-                  slots={ITEMS_PER_ROW}
-                />
-                {rowIdx < rows.length - 1 && <RowBridge />}
-              </div>
-            ))}
-          </div>
+          <Timeline marcos={marcos} />
         )}
 
       </div>

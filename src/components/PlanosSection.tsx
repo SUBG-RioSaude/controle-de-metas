@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@tanstack/react-query";
 import * as Accordion from "@radix-ui/react-accordion";
@@ -17,6 +17,7 @@ import {
 import { StatusBadge } from "./StatusBadge";
 import { AnimatedCounter } from "./AnimatedCounter";
 import SpotlightCard from "@/components/SpotlightCard";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   Sheet,
   SheetContent,
@@ -28,22 +29,16 @@ import {
   ChevronDown,
   Users,
   Target,
-  Flag,
   LayoutGrid,
+  Layers,
   X,
+  ChevronsUpDown,
 } from "lucide-react";
 import { ScrollIndicator } from "@/components/ui/ScrollIndicator";
 
 // ── Constantes ────────────────────────────────────────────────────────────────
 
-const TABS = [
-  { id: "temas", label: "Temas Estratégicos", icon: Target },
-  { id: "planos", label: "Planos de Ação", icon: Flag },
-] as const;
-
-type TabId = (typeof TABS)[number]["id"];
-
-const AUTOPLAY_INTERVAL = 8000;
+const PAGE_SIZE = 10;
 
 // ── Utilitários ───────────────────────────────────────────────────────────────
 
@@ -80,7 +75,7 @@ function temaToEtapas(tema: ApiTema, code: string): Etapa[] {
         plan_id: tema.id,
         step_number: stepIndex + 1,
         description: meta.descricao,
-        tema: topico.descricao.slice(0, 60) + (topico.descricao.length > 60 ? "..." : ""),
+        tema: topico.descricao,
         relacao_direta: code,
         area: topico.setorResponsavel || "—",
         prazo: "—",
@@ -99,14 +94,6 @@ function extractTipo(nome: string): string | null {
   const match = nome.match(/\(([^)]+)\)$/);
   return match ? match[1] : null;
 }
-
-// ── Swipe variants ────────────────────────────────────────────────────────────
-
-const swipeVariants = {
-  enter: (dir: number) => ({ x: dir > 0 ? 16 : -16, opacity: 0 }),
-  center: { x: 0, opacity: 1 },
-  exit: (dir: number) => ({ x: dir > 0 ? -16 : 16, opacity: 0 }),
-};
 
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
@@ -386,11 +373,13 @@ function TemaCard({
   index,
   selected,
   onClick,
+  onOpenSheet,
 }: {
   tema: ApiTema;
   index: number;
   selected: boolean;
   onClick: () => void;
+  onOpenSheet: () => void;
 }) {
   const tipo = extractTipo(tema.nome);
   const nomeClean = tema.nome.replace(/ \([^)]+\)$/, "");
@@ -456,18 +445,26 @@ function TemaCard({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between mt-auto">
-          <span className="text-[10px] text-white/30 tabular-nums">
-            {tema.topicos.length} {tema.topicos.length === 1 ? "tópico" : "tópicos"} &middot;{" "}
-            {total} {total === 1 ? "meta" : "metas"}
-          </span>
+        <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/[0.06]">
+          <button
+            onClick={(e) => { e.stopPropagation(); onOpenSheet(); }}
+            className={`flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1 rounded-lg border transition-all ${
+              selected
+                ? "border-[#42b9eb]/20 text-[#42b9eb]/70 hover:text-[#42b9eb] hover:border-[#42b9eb]/40"
+                : "border-white/[0.08] text-white/35 hover:text-white/70 hover:border-white/20"
+            }`}
+          >
+            <Layers className="w-3 h-3" />
+            Ver tópicos
+          </button>
+
           <span
-            className={`flex items-center gap-1 text-[10px] font-medium transition-colors ${
+            className={`flex items-center gap-1.5 text-[10px] font-medium transition-colors ${
               selected ? "text-[#42b9eb]" : "text-white/25 group-hover:text-white/45"
             }`}
           >
             <LayoutGrid className="w-3 h-3" />
-            Ver detalhes
+            {selected ? "Selecionado" : "Ver etapas"}
           </span>
         </div>
       </SpotlightCard>
@@ -475,342 +472,63 @@ function TemaCard({
   );
 }
 
-// ── TemasTab ──────────────────────────────────────────────────────────────────
-
-function TemasTab({ temas, onInteract }: { temas: ApiTema[]; onInteract: () => void }) {
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const selectedTema = temas.find((t) => t.id === selectedId) ?? null;
-
-  const totalTopicos = temas.reduce((acc, t) => acc + t.topicos.length, 0);
-  const totalMetas = temas.reduce(
-    (acc, t) => acc + t.topicos.reduce((a, tp) => a + tp.metas.length, 0),
-    0
-  );
-
-  return (
-    <>
-      {/* Chips de totais */}
-      <div className="flex flex-wrap gap-2 mb-8">
-        {[
-          `${temas.length} ${temas.length === 1 ? "tema" : "temas"}`,
-          `${totalTopicos} ${totalTopicos === 1 ? "tópico" : "tópicos"}`,
-          `${totalMetas} ${totalMetas === 1 ? "meta" : "metas"}`,
-        ].map((label, i) => (
-          <motion.span
-            key={label}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white/[0.05] border border-white/[0.08] text-white/50"
-          >
-            {label}
-          </motion.span>
-        ))}
-      </div>
-
-      {/* Grid de cards compactos */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-        {temas.map((tema, i) => (
-          <TemaCard
-            key={tema.id}
-            tema={tema}
-            index={i}
-            selected={selectedId === tema.id}
-            onClick={() => { onInteract(); setSelectedId(selectedId === tema.id ? null : tema.id); }}
-          />
-        ))}
-      </div>
-
-      {/* Sheet lateral — isolado do grid */}
-      <TemaSheet
-        tema={selectedTema}
-        open={selectedTema !== null}
-        onClose={() => setSelectedId(null)}
-      />
-    </>
-  );
-}
-
-// ── PlanosTab ─────────────────────────────────────────────────────────────────
-
-const PAGE_SIZE = 10;
-
-function PlanosTab({ temas, onInteract }: { temas: ApiTema[]; onInteract: () => void }) {
-  const [selected, setSelected] = useState<string | null>(null);
-  const [page, setPage]         = useState(1);
-  const [mounted, setMounted]   = useState(false);
-  useEffect(() => { setMounted(true); }, []);
-
-  const planos: PlanoDeAcao[] = temas.map((t, i) => temaToPlano(t, i));
-
-  const etapasByPlan: Record<string, Etapa[]> = {};
-  planos.forEach((plano, i) => {
-    etapasByPlan[plano.id] = temaToEtapas(temas[i], plano.code);
-  });
-
-  const selectedPlan  = planos.find((p) => p.id === selected);
-  const planEtapas    = (selected ? (etapasByPlan[selected] ?? []) : [])
-    .slice()
-    .sort((a, b) => {
-      const num = (s: string) => { const m = s.match(/Etapa\s+(\d+)/i); return m ? parseInt(m[1], 10) : 9999; };
-      return num(a.tema) - num(b.tema);
-    });
-  const totalPages    = Math.ceil(planEtapas.length / PAGE_SIZE);
-  const pagedEtapas   = planEtapas.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
-  const completed     = planEtapas.filter(
-    (e) => e.status === "Concluída" || e.status === "Documento Gerado"
-  ).length;
-  const pct = planEtapas.length > 0 ? Math.round((completed / planEtapas.length) * 100) : 0;
-
-  return (
-    <div>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        {planos.map((plan, i) => {
-          const pe = etapasByPlan[plan.id] ?? [];
-          const pc = pe.filter(
-            (e) => e.status === "Concluída" || e.status === "Documento Gerado"
-          ).length;
-          const pp = pe.length > 0 ? Math.round((pc / pe.length) * 100) : 0;
-          const isSelected = selected === plan.id;
-
-          return (
-            <motion.button
-              key={plan.id}
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.06 }}
-              onClick={() => { onInteract(); setSelected(isSelected ? null : plan.id); setPage(1); }}
-              className={`glass-panel p-6 text-left transition-all duration-300 group ${
-                isSelected
-                  ? "border-primary/50 shadow-[0_0_30px_hsl(189_100%_44%/0.1)]"
-                  : "hover:border-border/60"
-              }`}
-            >
-              <div className="flex items-start justify-between mb-3">
-                <h3 className="font-display font-semibold text-foreground flex-1 pr-2">{plan.title}</h3>
-                <ChevronRight
-                  className={`shrink-0 w-4 h-4 text-muted-foreground transition-transform duration-300 mt-0.5 ${
-                    isSelected ? "rotate-90 text-primary" : "group-hover:translate-x-1"
-                  }`}
-                /></div>
-              <p className="text-xs text-muted-foreground line-clamp-2 mb-4">{plan.description}</p>
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">
-                  {mounted ? `${pe.length} etapas` : "-- etapas"}
-                </span>
-                <span className="text-primary font-semibold">
-                  {mounted ? `${pp}%` : "--%"}
-                </span>
-              </div>
-              <div className="h-1.5 bg-muted rounded-full mt-2 overflow-hidden">
-                <div
-                  className="h-full bg-primary/60 rounded-full transition-all"
-                  style={{ width: mounted ? `${pp}%` : 0 }}
-                />
-              </div>
-            </motion.button>
-          );
-        })}
-      </div>
-
-      <AnimatePresence mode="wait">
-        {selectedPlan && (
-          <motion.div
-            key={selected}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.4 }}
-            className="overflow-hidden"
-          >
-            <div className="glass-panel p-8 mb-6">
-              <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-                <div className="flex-1">
-                  <h3 className="font-display font-bold text-2xl text-foreground mb-1">
-                    {selectedPlan.title}
-                  </h3>
-                  <p className="text-muted-foreground">{selectedPlan.description}</p>
-                </div>
-                <div className="shrink-0 text-right">
-                  <div className="flex items-baseline gap-1 justify-end">
-                    <AnimatedCounter value={completed} className="text-3xl text-primary" />
-                    <span className="text-muted-foreground text-lg">/</span>
-                    <AnimatedCounter value={planEtapas.length} className="text-3xl text-foreground" />
-                  </div>
-                  <span className="text-xs text-muted-foreground">
-                    etapas &bull; {pct}% concluído
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="glass-panel overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-border/50">
-                      {["Etapa", "Descritivo", "Tema", "Área", "Prazo", "Status", "Doc.", "Link"].map(
-                        (h) => (
-                          <th
-                            key={h}
-                            className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider"
-                          >
-                            {h}
-                          </th>
-                        )
-                      )}
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {pagedEtapas.map((etapa, i) => (
-                      <motion.tr
-                        key={etapa.id}
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ delay: i * 0.04 }}
-                        className={`border-b border-border/20 hover:bg-accent/20 transition-colors ${
-                          i % 2 === 0 ? "bg-card/20" : ""
-                        }`}
-                      >
-                        <td className="px-4 py-2.5 font-display font-semibold text-primary">
-                          {(() => { const m = etapa.tema.match(/Etapa\s+(\d+)/i); return m ? `E${parseInt(m[1], 10)}` : `E${etapa.step_number}`; })()}
-                        </td>
-                        <td className="px-4 py-2.5 text-foreground max-w-[400px]">
-                          {etapa.description}
-                        </td>
-                        <td className="px-4 py-2.5 text-muted-foreground">{etapa.tema}</td>
-                        <td className="px-4 py-2.5 text-muted-foreground">{etapa.area}</td>
-                        <td className="px-4 py-2.5 text-muted-foreground whitespace-nowrap">
-                          {etapa.prazo}
-                        </td>
-                        <td className="px-4 py-2.5">
-                          <StatusBadge status={etapa.status} />
-                        </td>
-                        <td className="px-4 py-2.5 text-muted-foreground">
-                          {etapa.documento_comprobatorio || "—"}
-                        </td>
-                        <td className="px-4 py-2.5">
-                          {etapa.drive_link ? (
-                            <a
-                              href={etapa.drive_link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:text-primary/80 transition-colors"
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                            </a>
-                          ) : (
-                            <span className="text-muted-foreground/40">—</span>
-                          )}
-                        </td>
-                      </motion.tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              {/* Paginação */}
-              {totalPages > 1 && (
-                <div className="flex items-center justify-between px-5 py-4 border-t border-border/30">
-                  <span className="text-xs text-muted-foreground">
-                    Etapas{" "}
-                    <span className="font-medium text-foreground">
-                      {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, planEtapas.length)}
-                    </span>{" "}
-                    de{" "}
-                    <span className="font-medium text-foreground">{planEtapas.length}</span>
-                  </span>
-
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => setPage((p) => Math.max(1, p - 1))}
-                      disabled={page === 1}
-                      className="flex items-center justify-center w-8 h-8 rounded-lg border border-border/50 text-muted-foreground hover:text-foreground hover:border-border disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                    >
-                      <ChevronRight className="w-4 h-4 rotate-180" />
-                    </button>
-
-                    {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((p) => (
-                      <button
-                        key={p}
-                        onClick={() => setPage(p)}
-                        className={`flex items-center justify-center w-8 h-8 rounded-lg text-xs font-medium transition-all ${
-                          p === page
-                            ? "bg-primary/15 text-primary border border-primary/30"
-                            : "border border-border/50 text-muted-foreground hover:text-foreground hover:border-border"
-                        }`}
-                      >
-                        {p}
-                      </button>
-                    ))}
-
-                    <button
-                      onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={page === totalPages}
-                      className="flex items-center justify-center w-8 h-8 rounded-lg border border-border/50 text-muted-foreground hover:text-foreground hover:border-border disabled:opacity-30 disabled:cursor-not-allowed transition-all"
-                    >
-                      <ChevronRight className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
-  );
-}
-
 // ── PlanosSection ─────────────────────────────────────────────────────────────
 
 export function PlanosSection() {
-  const [activeTab, setActiveTab] = useState<TabId>("temas");
-  const [direction, setDirection] = useState(0);
-  const [progressKey, setProgressKey] = useState(0);
-  // hovered: pausa temporária ao passar o mouse
-  // stopped: parada definitiva ao clicar em qualquer elemento interativo
-  const [hovered, setHovered] = useState(false);
-  const [stopped, setStopped] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [sheetId, setSheetId] = useState<string | null>(null);
+  const [page, setPage] = useState(1);
+  const [mounted, setMounted] = useState(false);
+  const [tableLoading, setTableLoading] = useState(false);
+  const prevSelectedId = useRef<string | null>(null);
+  useEffect(() => setMounted(true), []);
 
-  const isPlaying = !hovered && !stopped;
+  useEffect(() => {
+    if (!selectedId || prevSelectedId.current === null) {
+      prevSelectedId.current = selectedId;
+      return;
+    }
+    if (prevSelectedId.current !== selectedId) {
+      prevSelectedId.current = selectedId;
+      setTableLoading(true);
+      const t = setTimeout(() => setTableLoading(false), 280);
+      return () => clearTimeout(t);
+    }
+  }, [selectedId]);
 
   const { data: temas, isLoading, isError } = useQuery({
     queryKey: ["temas"],
     queryFn: getTemas,
   });
 
-  // Para o autoplay definitivamente (clique em tab, card ou sheet)
-  const stopAutoplay = useCallback(() => setStopped(true), []);
+  const planos: PlanoDeAcao[] = (temas ?? []).map((t, i) => temaToPlano(t, i));
 
-  const switchTab = useCallback(
-    (id: TabId, manual = false) => {
-      const currentIdx = TABS.findIndex((t) => t.id === activeTab);
-      const nextIdx = TABS.findIndex((t) => t.id === id);
-      setDirection(nextIdx > currentIdx ? 1 : -1);
-      setActiveTab(id);
-      setProgressKey((k) => k + 1);
-      if (manual) stopAutoplay();
-    },
-    [activeTab, stopAutoplay]
+  const etapasByPlan: Record<string, Etapa[]> = {};
+  planos.forEach((plano, i) => {
+    etapasByPlan[plano.id] = temaToEtapas((temas ?? [])[i], plano.code);
+  });
+
+  const selectedTema = temas?.find((t) => t.id === selectedId) ?? null;
+  const sheetTema = temas?.find((t) => t.id === sheetId) ?? null;
+  const selectedPlan = planos.find((p) => p.id === selectedId);
+  const planEtapas = (selectedId ? (etapasByPlan[selectedId] ?? []) : [])
+    .slice()
+    .sort((a, b) => {
+      const num = (s: string) => { const m = s.match(/Etapa\s+(\d+)/i); return m ? parseInt(m[1], 10) : 9999; };
+      return num(a.tema) - num(b.tema);
+    });
+  const totalPages = Math.ceil(planEtapas.length / PAGE_SIZE);
+  const pagedEtapas = planEtapas.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const completed = planEtapas.filter(
+    (e) => e.status === "Concluída" || e.status === "Documento Gerado"
+  ).length;
+  const pct = planEtapas.length > 0 ? Math.round((completed / planEtapas.length) * 100) : 0;
+
+  const totalTopicos = (temas ?? []).reduce((acc, t) => acc + t.topicos.length, 0);
+  const totalMetas = (temas ?? []).reduce(
+    (acc, t) => acc + t.topicos.reduce((a, tp) => a + tp.metas.length, 0),
+    0
   );
-
-  useEffect(() => {
-    if (!isPlaying) return;
-    const id = setInterval(() => {
-      setActiveTab((prev) => {
-        const idx = TABS.findIndex((t) => t.id === prev);
-        const next = TABS[(idx + 1) % TABS.length];
-        setDirection(1);
-        setProgressKey((k) => k + 1);
-        return next.id;
-      });
-    }, AUTOPLAY_INTERVAL);
-    return () => clearInterval(id);
-  }, [isPlaying]);
-
-  const handleMouseEnter = () => setHovered(true);
-  const handleMouseLeave = () => setHovered(false);
 
   return (
     <section id="planos" className="py-32 relative">
@@ -835,66 +553,7 @@ export function PlanosSection() {
           </p>
         </motion.div>
 
-        {/* Tabs */}
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="mb-10"
-          onMouseEnter={handleMouseEnter}
-          onMouseLeave={handleMouseLeave}
-        >
-          <div className="inline-flex p-1 rounded-xl bg-white/[0.05] border border-white/[0.08]">
-            {TABS.map((tab) => {
-              const Icon = tab.icon;
-              const isActive = activeTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => switchTab(tab.id, true)}
-                  className="relative flex items-center gap-2 px-5 py-2.5 rounded-lg text-sm font-medium transition-colors duration-200"
-                >
-                  {isActive && (
-                    <motion.span
-                      layoutId="tab-pill"
-                      className="absolute inset-0 rounded-lg bg-[#42b9eb]/15 border border-[#42b9eb]/25"
-                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                    />
-                  )}
-                  <Icon
-                    className={`relative z-10 w-4 h-4 transition-colors ${
-                      isActive ? "text-[#42b9eb]" : "text-white/35"
-                    }`}
-                  />
-                  <span
-                    className={`relative z-10 transition-colors ${
-                      isActive ? "text-white" : "text-white/40"
-                    }`}
-                  >
-                    {tab.label}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Progress bar autoplay — oculto quando parado definitivamente */}
-          {!stopped && (
-            <div className="mt-3 h-[2px] w-full max-w-xs bg-white/[0.05] rounded-full overflow-hidden">
-              {isPlaying && (
-                <motion.div
-                  key={progressKey}
-                  className="h-full bg-[#42b9eb]/50 rounded-full"
-                  initial={{ width: "0%" }}
-                  animate={{ width: "100%" }}
-                  transition={{ duration: AUTOPLAY_INTERVAL / 1000, ease: "linear" }}
-                />
-              )}
-            </div>
-          )}
-        </motion.div>
-
-        {/* Content */}
+        {/* Loading / Error */}
         {isLoading && <Skeleton />}
 
         {isError && (
@@ -906,29 +565,243 @@ export function PlanosSection() {
         )}
 
         {!isLoading && !isError && temas && (
-          <div
-            className="relative"
-            onMouseEnter={handleMouseEnter}
-            onMouseLeave={handleMouseLeave}
-          >
-            <AnimatePresence mode="wait" custom={direction}>
-              <motion.div
-                key={activeTab}
-                custom={direction}
-                variants={swipeVariants}
-                initial="enter"
-                animate="center"
-                exit="exit"
-                transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-              >
-                {activeTab === "temas" ? (
-                  <TemasTab temas={temas} onInteract={stopAutoplay} />
-                ) : (
-                  <PlanosTab temas={temas} onInteract={stopAutoplay} />
-                )}
-              </motion.div>
+          <>
+            {/* Stats chips */}
+            <div className="flex flex-wrap gap-2 mb-8">
+              {[
+                `${temas.length} ${temas.length === 1 ? "tema" : "temas"}`,
+                `${totalTopicos} ${totalTopicos === 1 ? "tópico" : "tópicos"}`,
+                `${totalMetas} ${totalMetas === 1 ? "meta" : "metas"}`,
+              ].map((label, i) => (
+                <motion.span
+                  key={label}
+                  initial={{ opacity: 0, y: 6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: i * 0.05 }}
+                  className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white/[0.05] border border-white/[0.08] text-white/50"
+                >
+                  {label}
+                </motion.span>
+              ))}
+            </div>
+
+            {/* Grid de cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+              {temas.map((tema, i) => (
+                <TemaCard
+                  key={tema.id}
+                  tema={tema}
+                  index={i}
+                  selected={selectedId === tema.id}
+                  onClick={() => {
+                    setSelectedId(selectedId === tema.id ? null : tema.id);
+                    setPage(1);
+                  }}
+                  onOpenSheet={() => setSheetId(tema.id)}
+                />
+              ))}
+            </div>
+
+            {/* Tabela inline — aparece abaixo do grid com AnimatePresence */}
+            <AnimatePresence>
+              {selectedId && selectedPlan && (
+                <motion.div
+                  key="table-panel"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 8 }}
+                  transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                  className="mt-8"
+                >
+                  {/* Header do plano selecionado */}
+                  <div className="glass-panel p-8 mb-6">
+                    <div className="flex flex-col lg:flex-row lg:items-center gap-6">
+                      <div className="flex-1">
+                        <h3 className="font-display font-bold text-2xl text-foreground mb-1">
+                          {selectedPlan.title}
+                        </h3>
+                        <p className="text-muted-foreground">{selectedPlan.description}</p>
+                      </div>
+                      <button
+                        onClick={() => setSheetId(selectedId)}
+                        className="shrink-0 flex items-center gap-1.5 text-[11px] text-white/30 hover:text-[#42b9eb] transition-colors px-3 py-1.5 rounded-lg border border-white/[0.06] hover:border-[#42b9eb]/20"
+                      >
+                        <Layers className="w-3.5 h-3.5" />
+                        Tópicos
+                      </button>
+                      <div className="shrink-0 text-right">
+                        <div className="flex items-baseline gap-1 justify-end">
+                          <AnimatedCounter value={completed} className="text-3xl text-primary" />
+                          <span className="text-muted-foreground text-lg">/</span>
+                          <AnimatedCounter value={planEtapas.length} className="text-3xl text-foreground" />
+                        </div>
+                        <span className="text-xs text-muted-foreground">
+                          etapas &bull; {mounted ? `${pct}%` : "--%"} concluído
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Tabela de etapas */}
+                  <div className="glass-panel overflow-hidden">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-xs">
+                        <thead>
+                          <tr className="border-b border-border/50">
+                            {["Etapa", "Descritivo", "Tema", "Área", "Prazo", "Status", "Doc.", "Link"].map(
+                              (h) => (
+                                <th
+                                  key={h}
+                                  className="text-left px-4 py-2.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider"
+                                >
+                                  {h}
+                                </th>
+                              )
+                            )}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {tableLoading ? (
+                            Array.from({ length: 6 }).map((_, i) => (
+                              <tr key={i} className="border-b border-border/20">
+                                <td className="px-4 py-3"><div className="h-3 w-6 rounded bg-white/[0.06] animate-pulse" /></td>
+                                <td className="px-4 py-3"><div className="h-3 rounded bg-white/[0.06] animate-pulse" style={{ width: `${55 + (i * 17) % 35}%` }} /></td>
+                                <td className="px-4 py-3"><div className="h-3 w-28 rounded bg-white/[0.06] animate-pulse" /></td>
+                                <td className="px-4 py-3"><div className="h-3 w-16 rounded bg-white/[0.06] animate-pulse" /></td>
+                                <td className="px-4 py-3"><div className="h-3 w-12 rounded bg-white/[0.06] animate-pulse" /></td>
+                                <td className="px-4 py-3"><div className="h-5 w-20 rounded-full bg-white/[0.06] animate-pulse" /></td>
+                                <td className="px-4 py-3"><div className="h-3 w-8 rounded bg-white/[0.06] animate-pulse" /></td>
+                                <td className="px-4 py-3"><div className="h-3 w-4 rounded bg-white/[0.06] animate-pulse" /></td>
+                              </tr>
+                            ))
+                          ) : pagedEtapas.map((etapa, i) => {
+                            const etapaNum = (() => { const m = etapa.tema.match(/Etapa\s+(\d+)/i); return m ? parseInt(m[1], 10) : etapa.step_number; })();
+                            const prevNum  = i > 0 ? (() => { const m = pagedEtapas[i - 1].tema.match(/Etapa\s+(\d+)/i); return m ? parseInt(m[1], 10) : pagedEtapas[i - 1].step_number; })() : null;
+                            const isFirstOfGroup = prevNum !== etapaNum;
+                            return (
+                              <motion.tr
+                                key={etapa.id}
+                                initial={{ opacity: 0, x: -10 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: i * 0.04 }}
+                                className={`border-b border-border/20 hover:bg-accent/20 transition-colors ${
+                                  isFirstOfGroup && i !== 0 ? "border-t border-border/40" : ""
+                                } ${i % 2 === 0 ? "bg-card/20" : ""}`}
+                              >
+                                <td className="px-4 py-2.5 font-display font-semibold text-primary">
+                                  {isFirstOfGroup ? `E${etapaNum}` : <span className="text-border/40 text-[10px]">↳</span>}
+                                </td>
+                                <td className="px-4 py-2.5 text-foreground max-w-[400px]">
+                                  {etapa.description}
+                                </td>
+                                <td className="px-4 py-2.5 text-muted-foreground max-w-[200px]">
+                                  <TooltipProvider delayDuration={200}>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <span className="group inline-flex items-center gap-1 max-w-full px-2 py-0.5 rounded-md border border-transparent hover:border-border/60 hover:bg-accent/40 transition-all cursor-default">
+                                          <span className="truncate text-xs text-muted-foreground group-hover:text-foreground transition-colors">
+                                            {etapa.tema.replace(/^Etapa\s+\d+\.\s*/i, "")}
+                                          </span>
+                                          <ChevronsUpDown className="w-3 h-3 shrink-0 opacity-0 group-hover:opacity-60 transition-opacity" />
+                                        </span>
+                                      </TooltipTrigger>
+                                      <TooltipContent side="top" align="start" className="max-w-xs p-3">
+                                        <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1">Tema</p>
+                                        <p className="text-xs text-popover-foreground leading-relaxed">
+                                          {etapa.tema.replace(/^Etapa\s+\d+\.\s*/i, "")}
+                                        </p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </td>
+                                <td className="px-4 py-2.5 text-muted-foreground">{etapa.area}</td>
+                                <td className="px-4 py-2.5 text-muted-foreground whitespace-nowrap">
+                                  {etapa.prazo}
+                                </td>
+                                <td className="px-4 py-2.5">
+                                  <StatusBadge status={etapa.status} />
+                                </td>
+                                <td className="px-4 py-2.5 text-muted-foreground">
+                                  {etapa.documento_comprobatorio || "—"}
+                                </td>
+                                <td className="px-4 py-2.5">
+                                  {etapa.drive_link ? (
+                                    <a
+                                      href={etapa.drive_link}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-primary hover:text-primary/80 transition-colors"
+                                    >
+                                      <ExternalLink className="w-4 h-4" />
+                                    </a>
+                                  ) : (
+                                    <span className="text-muted-foreground/40">—</span>
+                                  )}
+                                </td>
+                              </motion.tr>
+                            );
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Paginação */}
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-between px-5 py-4 border-t border-border/30">
+                        <span className="text-xs text-muted-foreground">
+                          Etapas{" "}
+                          <span className="font-medium text-foreground">
+                            {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, planEtapas.length)}
+                          </span>{" "}
+                          de{" "}
+                          <span className="font-medium text-foreground">{planEtapas.length}</span>
+                        </span>
+
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => setPage((p) => Math.max(1, p - 1))}
+                            disabled={page === 1}
+                            className="flex items-center justify-center w-8 h-8 rounded-lg border border-border/50 text-muted-foreground hover:text-foreground hover:border-border disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                          >
+                            <ChevronRight className="w-4 h-4 rotate-180" />
+                          </button>
+
+                          {Array.from({ length: totalPages }, (_, idx) => idx + 1).map((p) => (
+                            <button
+                              key={p}
+                              onClick={() => setPage(p)}
+                              className={`flex items-center justify-center w-8 h-8 rounded-lg text-xs font-medium transition-all ${
+                                p === page
+                                  ? "bg-primary/15 text-primary border border-primary/30"
+                                  : "border border-border/50 text-muted-foreground hover:text-foreground hover:border-border"
+                              }`}
+                            >
+                              {p}
+                            </button>
+                          ))}
+
+                          <button
+                            onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                            disabled={page === totalPages}
+                            className="flex items-center justify-center w-8 h-8 rounded-lg border border-border/50 text-muted-foreground hover:text-foreground hover:border-border disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                          >
+                            <ChevronRight className="w-4 h-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              )}
             </AnimatePresence>
-          </div>
+
+            {/* TemaSheet para drill-down de tópicos */}
+            <TemaSheet
+              tema={sheetTema}
+              open={sheetTema !== null}
+              onClose={() => setSheetId(null)}
+            />
+          </>
         )}
       </div>
 
