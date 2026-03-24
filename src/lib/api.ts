@@ -16,6 +16,11 @@ declare global {
   }
 }
 
+// Indirect access prevents Next.js/SWC from inlining at build time.
+function runtimeEnv(key: string): string | undefined {
+  return process.env[key];
+}
+
 // Instância SEM baseURL fixo — definido dinamicamente a cada request
 const api = axios.create();
 
@@ -26,10 +31,9 @@ api.defaults.headers.patch["Content-Type"]  = "application/json";
 
 // ── Request: define baseURL dinamicamente + injeta token ─────────────────────
 api.interceptors.request.use((config) => {
-  // Lê em tempo real a cada requisição — nunca usa valor bakeado no build
   const base =
     (typeof window !== "undefined" && window.__ENV__?.NEXT_PUBLIC_AUTH_API) ||
-    process.env['NEXT_PUBLIC_AUTH_API'] ||
+    runtimeEnv('NEXT_PUBLIC_AUTH_API') ||
     "";
 
   if (!config.baseURL) {

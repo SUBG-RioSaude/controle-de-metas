@@ -1,16 +1,15 @@
 import type { ApiTema, ApiSetor, ApiOverviewStats, ApiMarco, ApiResponse, ApiDashboardStats } from "./types";
 
-// Para chamadas server-side (Server Components), usamos a variável sem NEXT_PUBLIC_
-// pois o Portainer injeta corretamente no Node em runtime.
-// Para chamadas client-side (improvável neste arquivo), cai no window.__ENV__.
+// Indirect access prevents Next.js/SWC from inlining at build time.
+function runtimeEnv(key: string): string | undefined {
+  return process.env[key];
+}
+
 const getMetasBase = () => {
-  // Server-side: process.env.NEXT_PUBLIC_METAS_API é lido diretamente do Portainer em runtime
   if (typeof window === "undefined") {
-    // Server-side: bracket notation impede o Next.js de inlinear no build → lê do Portainer em runtime
-    return process.env['NEXT_PUBLIC_METAS_API'];
+    return runtimeEnv('NEXT_PUBLIC_METAS_API');
   }
-  // Client-side: usa o window.__ENV__ injetado pelo layout.tsx
-  return window.__ENV__?.NEXT_PUBLIC_METAS_API || process.env.NEXT_PUBLIC_METAS_API;
+  return window.__ENV__?.NEXT_PUBLIC_METAS_API || "";
 };
 
 

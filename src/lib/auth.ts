@@ -63,11 +63,16 @@ export function isAuthenticated(): boolean {
   return !!getToken();
 }
 
+// Indirect access prevents Next.js/SWC from inlining at build time.
+function runtimeEnv(key: string): string | undefined {
+  return process.env[key];
+}
+
 // ── API login call (plain fetch — before Axios is configured) ─────────────────
 
 export async function loginWithGoogle(idToken: string): Promise<AuthUser> {
   const base = (typeof window !== "undefined" && window.__ENV__?.NEXT_PUBLIC_AUTH_API)
-    || process.env['NEXT_PUBLIC_AUTH_API'];
+    || runtimeEnv('NEXT_PUBLIC_AUTH_API');
   const res  = await fetch(`${base}/auth/google`, {
     method:  "POST",
     headers: { "Content-Type": "application/json" },

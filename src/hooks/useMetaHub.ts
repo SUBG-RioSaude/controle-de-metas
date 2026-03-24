@@ -122,7 +122,7 @@ export function useMetaHub({
       const token = getToken();
       if (!token) return;
 
-      const hub = window.__ENV__?.NEXT_PUBLIC_AUTH_API || process.env['NEXT_PUBLIC_AUTH_API'];
+      const hub = window.__ENV__?.NEXT_PUBLIC_AUTH_API || "";
       globalConnection = new signalR.HubConnectionBuilder()
         .withUrl(`${hub}/hubs/meta`, { accessTokenFactory: () => getToken() ?? "" })
         .withAutomaticReconnect()

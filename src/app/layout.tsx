@@ -10,25 +10,37 @@ export const metadata: Metadata = {
 
 export const dynamic = "force-dynamic";
 
+// Indirect access prevents Next.js/SWC from inlining NEXT_PUBLIC_ vars at build time.
+// This ensures the values are read from the actual runtime environment (Portainer).
+function runtimeEnv(key: string): string | undefined {
+  return process.env[key];
+}
+
+const ENV_KEYS = [
+  'NEXT_PUBLIC_AUTH_API',
+  'NEXT_PUBLIC_METAS_API',
+  'NEXT_PUBLIC_SUPPORT_API',
+  'NEXT_PUBLIC_SYSTEMS_API',
+  'NEXT_PUBLIC_SYSTEM_ID',
+  'NEXT_PUBLIC_GOOGLE_CLIENT_ID',
+  'NEXT_PUBLIC_DISCORD_CATEGORY_ID',
+] as const;
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const envPayload = Object.fromEntries(
+    ENV_KEYS.map((k) => [k, runtimeEnv(k) ?? ""])
+  );
+
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.__ENV__ = ${JSON.stringify({
-              NEXT_PUBLIC_AUTH_API: process.env['NEXT_PUBLIC_AUTH_API'],
-              NEXT_PUBLIC_METAS_API: process.env['NEXT_PUBLIC_METAS_API'],
-              NEXT_PUBLIC_SUPPORT_API: process.env['NEXT_PUBLIC_SUPPORT_API'],
-              NEXT_PUBLIC_SYSTEMS_API: process.env['NEXT_PUBLIC_SYSTEMS_API'],
-              NEXT_PUBLIC_SYSTEM_ID: process.env['NEXT_PUBLIC_SYSTEM_ID'],
-              NEXT_PUBLIC_GOOGLE_CLIENT_ID: process.env['NEXT_PUBLIC_GOOGLE_CLIENT_ID'],
-              NEXT_PUBLIC_DISCORD_CATEGORY_ID: process.env['NEXT_PUBLIC_DISCORD_CATEGORY_ID'],
-            })}`,
+            __html: `window.__ENV__ = ${JSON.stringify(envPayload)}`,
           }}
         />
       </head>

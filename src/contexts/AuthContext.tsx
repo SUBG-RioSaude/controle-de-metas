@@ -71,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Avoid duplicate connections
     if (connectionRef.current) return;
 
-    const hub = window.__ENV__?.NEXT_PUBLIC_AUTH_API || process.env['NEXT_PUBLIC_AUTH_API'];
+    const hub = window.__ENV__?.NEXT_PUBLIC_AUTH_API || "";
     const connection = new signalR.HubConnectionBuilder()
       .withUrl(`${hub}/hubs/role`, {
         accessTokenFactory: () => user.token,
