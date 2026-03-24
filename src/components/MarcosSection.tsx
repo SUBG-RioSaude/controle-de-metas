@@ -76,8 +76,8 @@ function MarcoCard({ marco, index, isAbove }: { marco: ApiMarco; index: number; 
         <p className="text-[11px] text-white/40 font-mono">{formatPrazo(marco.prazo)}</p>
 
         <div className="flex flex-wrap gap-1.5">
-          {marco.responsaveis.map((r) => (
-            <span key={r} className="text-[10px] text-white/50 bg-white/[0.05] border border-white/[0.08] rounded-md px-2 py-0.5">
+          {marco.responsaveis.map((r, i) => (
+            <span key={`${r}-${i}`} className="text-[10px] text-white/50 bg-white/[0.05] border border-white/[0.08] rounded-md px-2 py-0.5">
               {r}
             </span>
           ))}
