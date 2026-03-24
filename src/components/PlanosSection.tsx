@@ -13,6 +13,7 @@ import {
   type PlanoDeAcao,
   type Etapa,
   META_STATUS_CONFIG,
+  STATUS_LIST,
 } from "@/lib/types";
 
 const ETAPA_STATUS_DOT: Record<string, string> = {
@@ -401,14 +402,7 @@ function TemaCard({
   const concluidas = todasMetas.filter(
     (m) => m.status === "Concluida" || m.status === "DocumentoGerado"
   ).length;
-  const emAndamento = todasMetas.filter((m) => m.status === "EmAndamento").length;
-  const naoIniciadas = total - concluidas - emAndamento;
   const pct = total > 0 ? Math.round((concluidas / total) * 100) : 0;
-
-  const stripeColor =
-    pct >= 75 ? "#42b9eb" :
-    pct >= 25 ? "#facc15" :
-    "#f97316";
 
   return (
     <motion.button
@@ -424,18 +418,12 @@ function TemaCard({
     >
       <SpotlightCard
         spotlightColor="rgba(66, 185, 235, 0.1)"
-        className={`relative bg-[hsl(213_55%_9%)] border rounded-2xl p-5 h-full flex flex-col overflow-hidden transition-colors duration-300 ${
+        className={`bg-white/[0.05] border rounded-2xl p-5 h-full flex flex-col transition-colors duration-300 ${
           selected
             ? "border-[#42b9eb]/35"
-            : "border-white/[0.10] hover:border-white/[0.18]"
+            : "border-white/[0.08] hover:border-white/[0.15]"
         }`}
       >
-        {/* Left accent stripe */}
-        <div
-          className="absolute left-0 top-0 bottom-0 w-[3px] rounded-l-2xl transition-colors duration-300"
-          style={{ backgroundColor: selected ? "#42b9eb" : stripeColor, opacity: selected ? 1 : 0.7 }}
-        />
-
         {/* Header */}
         <div className="flex items-start justify-between gap-3 mb-4">
           <p className="text-sm font-display font-semibold text-white leading-snug line-clamp-2 flex-1">
@@ -448,72 +436,48 @@ function TemaCard({
           )}
         </div>
 
-        {/* Segmented progress bar */}
-        <div className="mb-3">
+        {/* Progress */}
+        <div className="mb-4">
           <div className="flex items-center justify-between text-[10px] mb-1.5">
-            <span className="text-white/65">Progresso</span>
-            <span className={`font-semibold tabular-nums ${selected ? "text-[#42b9eb]" : "text-white/75"}`}>
+            <span className="text-white/30">Progresso</span>
+            <span className={`font-semibold tabular-nums ${selected ? "text-[#42b9eb]" : "text-white/40"}`}>
               {pct}%
             </span>
           </div>
-          <div className="h-2 bg-white/[0.08] rounded-full overflow-hidden flex">
+          <div className="h-1.5 bg-white/[0.06] rounded-full overflow-hidden">
             <motion.div
-              className="h-full bg-[#42b9eb] shrink-0"
+              className={`h-full rounded-full transition-colors duration-300 ${
+                selected
+                  ? "bg-gradient-to-r from-[#42b9eb]/70 to-[#42b9eb]"
+                  : "bg-white/20"
+              }`}
               initial={{ width: 0 }}
-              animate={{ width: total > 0 ? `${(concluidas / total) * 100}%` : "0%" }}
+              animate={{ width: `${pct}%` }}
               transition={{ duration: 0.7, delay: index * 0.05 + 0.2, ease: "easeOut" }}
-            />
-            <motion.div
-              className="h-full bg-yellow-400 shrink-0"
-              initial={{ width: 0 }}
-              animate={{ width: total > 0 ? `${(emAndamento / total) * 100}%` : "0%" }}
-              transition={{ duration: 0.7, delay: index * 0.05 + 0.25, ease: "easeOut" }}
             />
           </div>
         </div>
 
-        {/* Status count chips */}
-        <div className="flex items-center gap-3 mb-4">
-          {concluidas > 0 && (
-            <span className="flex items-center gap-1 text-[10px] text-white/45">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#42b9eb] shrink-0" />
-              {concluidas}
-            </span>
-          )}
-          {emAndamento > 0 && (
-            <span className="flex items-center gap-1 text-[10px] text-white/45">
-              <span className="w-1.5 h-1.5 rounded-full bg-yellow-400 shrink-0" />
-              {emAndamento}
-            </span>
-          )}
-          {naoIniciadas > 0 && (
-            <span className="flex items-center gap-1 text-[10px] text-white/45">
-              <span className="w-1.5 h-1.5 rounded-full bg-white/25 shrink-0" />
-              {naoIniciadas}
-            </span>
-          )}
-        </div>
-
         {/* Footer */}
-        <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/[0.10]">
+        <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/[0.06]">
           <button
             onClick={(e) => { e.stopPropagation(); onOpenSheet(); }}
-            className={`flex items-center gap-1.5 text-[11px] font-semibold px-3 py-1.5 rounded-lg border transition-all ${
+            className={`flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1 rounded-lg border transition-all ${
               selected
-                ? "border-[#42b9eb]/40 text-[#42b9eb] bg-[#42b9eb]/[0.08] hover:border-[#42b9eb]/70 hover:bg-[#42b9eb]/[0.14]"
-                : "border-white/25 text-white/70 hover:text-white hover:border-white/50 hover:bg-white/[0.06]"
+                ? "border-[#42b9eb]/20 text-[#42b9eb]/70 hover:text-[#42b9eb] hover:border-[#42b9eb]/40"
+                : "border-white/[0.08] text-white/35 hover:text-white/70 hover:border-white/20"
             }`}
           >
-            <Layers className="w-3.5 h-3.5" />
+            <Layers className="w-3 h-3" />
             Ver tópicos
           </button>
 
           <span
-            className={`flex items-center gap-1.5 text-[11px] font-semibold transition-colors ${
-              selected ? "text-[#42b9eb]" : "text-white/60 group-hover:text-white/80"
+            className={`flex items-center gap-1.5 text-[10px] font-medium transition-colors ${
+              selected ? "text-[#42b9eb]" : "text-white/25 group-hover:text-white/45"
             }`}
           >
-            <LayoutGrid className="w-3.5 h-3.5" />
+            <LayoutGrid className="w-3 h-3" />
             {selected ? "Selecionado" : "Ver etapas"}
           </span>
         </div>
@@ -740,7 +704,7 @@ export function PlanosSection() {
                       >
                         Todos
                       </button>
-                      {(["Em Andamento", "Concluída"] as EtapaStatus[]).map((s) => (
+                      {STATUS_LIST.map((s) => (
                         <button
                           key={s}
                           onClick={() => { setStatusFilter(s); setPage(1); }}
