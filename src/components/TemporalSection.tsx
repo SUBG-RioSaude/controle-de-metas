@@ -24,8 +24,8 @@ import { AnimatedCounter } from "./AnimatedCounter";
 type TabId = "evolucao" | "calendario";
 
 const TABS = [
-  { id: "evolucao" as const, label: "Evolução Temporal", Icon: TrendingUp },
-  { id: "calendario" as const, label: "Visão Temporal", Icon: Calendar },
+  { id: "evolucao" as const, label: "Evolução Temporal", Icon: TrendingUp, desc: "Distribuição mensal por status" },
+  { id: "calendario" as const, label: "Visão Temporal", Icon: Calendar, desc: "Calendário de metas por mês" },
 ];
 
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
@@ -152,44 +152,77 @@ export function TemporalSection() {
           </p>
         </motion.div>
 
-        {/* Tab bar + autoplay controls */}
-        <div className="flex flex-wrap items-center gap-4 mb-6">
-          <div className="flex gap-1 glass-panel p-1 rounded-xl w-fit">
-            {TABS.map(({ id, label, Icon }) => (
+        {/* Tab cards */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          {TABS.map(({ id, label, Icon, desc }) => {
+            const isActive = activeTab === id;
+            return (
               <button
                 key={id}
                 onClick={() => handleTabClick(id)}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
-                  activeTab === id
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
+                className={`relative text-left p-5 rounded-2xl border transition-all duration-300 overflow-hidden ${
+                  isActive
+                    ? "border-primary/40 bg-primary/5"
+                    : "border-border/20 bg-card/20 hover:border-border/40 hover:bg-card/30"
                 }`}
               >
-                <Icon className="w-4 h-4" />
-                {label}
-              </button>
-            ))}
-          </div>
+                {isActive && (
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-transparent pointer-events-none" />
+                )}
 
-          <div className="flex items-center gap-3 ml-auto">
-            <button
-              onClick={togglePause}
-              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-            >
-              {paused ? (
-                <Play className="w-3.5 h-3.5" />
-              ) : (
-                <Pause className="w-3.5 h-3.5" />
-              )}
-              {paused ? "Retomar" : "Pausar"}
-            </button>
-            <div className="w-24 h-1 bg-muted/40 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary rounded-full transition-none"
-                style={{ width: `${paused ? 0 : progress}%` }}
-              />
-            </div>
-          </div>
+                <div className="relative z-10 flex items-start gap-3">
+                  <div
+                    className={`p-2.5 rounded-xl transition-colors shrink-0 ${
+                      isActive
+                        ? "bg-primary/15 text-primary"
+                        : "bg-muted/20 text-muted-foreground"
+                    }`}
+                  >
+                    <Icon className="w-5 h-5" />
+                  </div>
+
+                  <div className="flex-1 min-w-0">
+                    <p
+                      className={`font-display font-semibold text-sm leading-tight transition-colors ${
+                        isActive ? "text-foreground" : "text-muted-foreground"
+                      }`}
+                    >
+                      {label}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-1 leading-tight">
+                      {desc}
+                    </p>
+                  </div>
+
+                  {isActive && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        togglePause();
+                      }}
+                      className="shrink-0 text-muted-foreground hover:text-foreground transition-colors mt-0.5"
+                    >
+                      {paused ? (
+                        <Play className="w-3.5 h-3.5" />
+                      ) : (
+                        <Pause className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  )}
+                </div>
+
+                {/* Progress bar along bottom edge */}
+                <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-border/20">
+                  {isActive && (
+                    <div
+                      className="h-full bg-primary transition-none"
+                      style={{ width: `${paused ? 0 : progress}%` }}
+                    />
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
 
         {/* Tab content */}
