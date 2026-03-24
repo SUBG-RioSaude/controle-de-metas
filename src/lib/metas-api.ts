@@ -1,4 +1,4 @@
-import type { ApiTema, ApiSetor, ApiOverviewStats, ApiMarco, ApiResponse } from "./types";
+import type { ApiTema, ApiSetor, ApiOverviewStats, ApiMarco, ApiResponse, ApiDashboardStats } from "./types";
 
 // Para chamadas server-side (Server Components), usamos a variável sem NEXT_PUBLIC_
 // pois o Portainer injeta corretamente no Node em runtime.
@@ -43,5 +43,13 @@ export async function getSetores(): Promise<ApiSetor[]> {
   if (!res.ok) throw new Error(`Erro ${res.status}`);
   const json: ApiResponse<ApiSetor[]> = await res.json();
   if (!json.success) throw new Error(json.error ?? "Erro ao buscar setores");
+  return json.data;
+}
+
+export async function getDashboardStats(): Promise<ApiDashboardStats> {
+  const res = await fetch(`${getMetasBase()}/stats/dashboard`, { next: { revalidate: 30 } });
+  if (!res.ok) throw new Error(`Erro ${res.status}`);
+  const json: ApiResponse<ApiDashboardStats> = await res.json();
+  if (!json.success) throw new Error(json.error ?? "Erro ao buscar estatísticas do dashboard");
   return json.data;
 }

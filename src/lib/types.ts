@@ -125,3 +125,51 @@ export const META_STATUS_CONFIG: Record<MetaStatus, { label: string; color: stri
   DocumentoGerado:   { label: "Documento Gerado",   color: "text-[#42b9eb]",   bg: "bg-[#42b9eb]/10 border-[#42b9eb]/20",    dot: "bg-[#42b9eb]" },
   AguardandoRetorno: { label: "Aguardando Retorno", color: "text-orange-400",  bg: "bg-orange-400/10 border-orange-400/20",  dot: "bg-orange-400" },
 };
+
+// ── API de Dashboard ──────────────────────────────────────────────────────────
+
+export interface ApiDashboardEvolucaoMensal {
+  mes: string;
+  naoIniciadas: number;
+  emAndamento: number;
+  pendentesAprovacao: number;
+  concluidas: number;
+  aguardandoRetorno: number;
+}
+
+export interface ApiDashboardCalendarioMeta {
+  id: string;
+  descricao: string;
+  status: MetaStatus;
+  data: string;
+}
+
+export interface ApiDashboardVisaoCalendario {
+  mes: string;
+  concluidas: number;
+  emAndamento: number;
+  naoIniciadas: number;
+  aguardando: number;
+  documentosGerados: number;
+  metas: ApiDashboardCalendarioMeta[];
+}
+
+export interface ApiDashboardStats {
+  metricas: {
+    totalMetas: number;
+    percentualConcluidas: number;
+    naoIniciadas: number;
+    emAndamento: number;
+    pendentesAprovacao: number;
+    concluidas: number;
+    aguardandoRetorno: number;
+    documentosUploaded: number;
+    documentosAprovados: number;
+    documentosAguardandoRevisao: number;
+    documentosComAlteracoesSolicitadas: number;
+  };
+  setores: { id: string; nome: string }[];
+  marcos: { id: string; titulo: string; descricao: string; dataMarco: string }[];
+  evolucaoMensal: ApiDashboardEvolucaoMensal[];
+  visaoCalendario: ApiDashboardVisaoCalendario[];
+}

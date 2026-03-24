@@ -7,8 +7,7 @@ import { HeroSection } from "@/components/HeroSection";
 import { PanoramaSection } from "@/components/PanoramaSection";
 import { MarcosSection } from "@/components/MarcosSection";
 import { PlanosSection } from "@/components/PlanosSection";
-import { AnaliseSection } from "@/components/AnaliseSection";
-import { CalendarioSection } from "@/components/CalendarioSection";
+import { TemporalSection } from "@/components/TemporalSection";
 import { FooterSection } from "@/components/FooterSection";
 import { BackToTop } from "@/components/ui/BackToTop";
 
@@ -342,8 +341,7 @@ const Landing = () => {
         <PanoramaSection />
         <MarcosSection />
         <PlanosSection />
-        <AnaliseSection />
-        <CalendarioSection />
+        <TemporalSection />
         <FooterSection />
       </div>
     </div>
