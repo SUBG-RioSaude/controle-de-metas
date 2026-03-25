@@ -11,8 +11,8 @@ interface Setor {
 }
 
 interface SetorAutocompleteProps {
-  value:    string[];
-  onChange: (value: string[]) => void;
+  value:    string | null;
+  onChange: (value: string | null) => void;
 }
 
 export function SetorAutocomplete({ value, onChange }: SetorAutocompleteProps) {
@@ -29,67 +29,60 @@ export function SetorAutocomplete({ value, onChange }: SetorAutocompleteProps) {
       .catch(() => {});
   }, []);
 
-  // Exclude already selected options
+  const selectedSetor = setores.find((s) => s.id === value) ?? null;
+
   const filtered = setores
-    .filter((s) => !value.includes(s.nome))
+    .filter((s) => s.id !== value)
     .filter((s) =>
       query.trim()
         ? s.nome.toLowerCase().includes(query.trim().toLowerCase())
         : true
     );
 
-  // Close on outside click
   useEffect(() => {
     function handleClick(e: MouseEvent) {
       if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setOpen(false);
+        setQuery("");
       }
     }
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
 
-  function select(nome: string) {
-    onChange([...value, nome]);
+  function select(id: string) {
+    onChange(id);
     setQuery("");
-    setHighlighted(0);
-    inputRef.current?.focus();
+    setOpen(false);
   }
 
-  function remove(nome: string) {
-    onChange(value.filter((v) => v !== nome));
+  function clear() {
+    onChange(null);
+    setQuery("");
     inputRef.current?.focus();
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    // Backspace on empty input removes last tag
-    if (e.key === "Backspace" && query === "" && value.length > 0) {
-      onChange(value.slice(0, -1));
-      return;
-    }
-
     if (!open && (e.key === "ArrowDown" || e.key === "ArrowUp")) {
       setOpen(true);
       return;
     }
-
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        if (filtered.length > 0)
-          setHighlighted((h) => (h + 1) % filtered.length);
+        if (filtered.length > 0) setHighlighted((h) => (h + 1) % filtered.length);
         break;
       case "ArrowUp":
         e.preventDefault();
-        if (filtered.length > 0)
-          setHighlighted((h) => (h - 1 + filtered.length) % filtered.length);
+        if (filtered.length > 0) setHighlighted((h) => (h - 1 + filtered.length) % filtered.length);
         break;
       case "Enter":
         e.preventDefault();
-        if (open && filtered[highlighted]) select(filtered[highlighted].nome);
+        if (open && filtered[highlighted]) select(filtered[highlighted].id);
         break;
       case "Escape":
         setOpen(false);
+        setQuery("");
         break;
     }
   }
@@ -98,43 +91,36 @@ export function SetorAutocomplete({ value, onChange }: SetorAutocompleteProps) {
 
   return (
     <div ref={containerRef} className="relative">
-      {/* Input box with tags inside */}
       <div
-        className="flex flex-wrap gap-1.5 items-center min-h-[40px] px-3 py-2 rounded-xl border border-border/50 bg-background focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary/50 transition-all cursor-text"
+        className="flex items-center min-h-[40px] px-3 py-2 rounded-xl border border-border/50 bg-background focus-within:ring-2 focus-within:ring-primary/30 focus-within:border-primary/50 transition-all cursor-text gap-2"
         onClick={() => { setOpen(true); inputRef.current?.focus(); }}
       >
-        {/* Selected tags */}
-        {value.map((nome) => (
-          <span
-            key={nome}
-            className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-medium border border-primary/20 shrink-0"
-          >
-            {nome}
+        {selectedSetor ? (
+          <>
+            <span className="flex-1 text-sm text-foreground">{selectedSetor.nome}</span>
             <button
               type="button"
-              onMouseDown={(e) => { e.preventDefault(); remove(nome); }}
-              className="text-primary/60 hover:text-primary transition-colors"
-              aria-label={`Remover ${nome}`}
+              onMouseDown={(e) => { e.preventDefault(); clear(); }}
+              className="text-muted-foreground hover:text-foreground transition-colors shrink-0"
+              aria-label="Remover setor"
             >
-              <X size={11} />
+              <X size={13} />
             </button>
-          </span>
-        ))}
-
-        {/* Text input */}
-        <div className="flex-1 flex items-center gap-1.5 min-w-[120px]">
-          <Search size={13} className="text-muted-foreground shrink-0" />
-          <input
-            ref={inputRef}
-            value={query}
-            onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
-            onFocus={() => setOpen(true)}
-            onKeyDown={handleKeyDown}
-            placeholder={value.length === 0 ? "Digite para buscar um setor..." : "Adicionar outro..."}
-            className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
-          />
-        </div>
-
+          </>
+        ) : (
+          <>
+            <Search size={13} className="text-muted-foreground shrink-0" />
+            <input
+              ref={inputRef}
+              value={query}
+              onChange={(e) => { setQuery(e.target.value); setOpen(true); }}
+              onFocus={() => setOpen(true)}
+              onKeyDown={handleKeyDown}
+              placeholder="Digite para buscar um setor..."
+              className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
+            />
+          </>
+        )}
         <button
           type="button"
           onMouseDown={(e) => { e.preventDefault(); setOpen((o) => !o); inputRef.current?.focus(); }}
@@ -145,9 +131,8 @@ export function SetorAutocomplete({ value, onChange }: SetorAutocompleteProps) {
         </button>
       </div>
 
-      {/* Dropdown */}
       <AnimatePresence>
-        {open && (
+        {open && !selectedSetor && (
           <motion.ul
             initial={{ opacity: 0, y: 6, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -156,17 +141,13 @@ export function SetorAutocomplete({ value, onChange }: SetorAutocompleteProps) {
             className="absolute z-50 mt-1.5 w-full bg-white dark:bg-slate-900 border border-border/50 rounded-xl shadow-xl overflow-hidden max-h-52 overflow-y-auto"
           >
             {filtered.length === 0 ? (
-              <li className="px-4 py-3 text-sm text-muted-foreground text-center">
-                {setores.length === value.length
-                  ? "Todos os setores já foram selecionados."
-                  : "Nenhum setor encontrado."}
-              </li>
+              <li className="px-4 py-3 text-sm text-muted-foreground text-center">Nenhum setor encontrado.</li>
             ) : (
               filtered.map((s, i) => (
                 <li key={s.id}>
                   <button
                     type="button"
-                    onMouseDown={(e) => { e.preventDefault(); select(s.nome); }}
+                    onMouseDown={(e) => { e.preventDefault(); select(s.id); }}
                     onMouseEnter={() => setHighlighted(i)}
                     className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
                       i === highlighted

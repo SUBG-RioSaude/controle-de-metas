@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import api from "@/lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown, ChevronRight, Target, Clock, CheckCircle2, RotateCcw, AlertCircle, Loader2, Check, Plus, Radio, Paperclip, FileText, Trash2, Upload, ThumbsUp, ThumbsDown, RefreshCw, ExternalLink, History } from "lucide-react";
+import { ChevronDown, ChevronRight, Target, Clock, CheckCircle2, RotateCcw, AlertCircle, Loader2, Check, Plus, Radio, Paperclip, FileText, Trash2, Upload, ThumbsUp, ThumbsDown, RefreshCw, ExternalLink, History, Pencil } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -18,11 +18,13 @@ import { Textarea } from "@/components/ui/textarea";
 type MetaStatus = "NaoIniciada" | "EmAndamento" | "PendenteAprovacao" | "Concluido" | "AguardandoRetorno";
 
 interface Meta {
-  id:          string;
-  descricao:   string;
-  status:      MetaStatus;
-  createdAt?:  string;
-  updatedAt?:  string;
+  id:               string;
+  descricao:        string;
+  status:           MetaStatus;
+  approvedByUserId: string | null;
+  approvedAt:       string | null;
+  createdAt?:       string;
+  updatedAt?:       string;
 }
 
 type DocumentoStatus = "PendenteAprovacao" | "Aprovado" | "Devolvido";
@@ -59,11 +61,12 @@ interface TopicoDocumento {
 }
 
 interface Topico {
-  id:               string;
-  descricao:        string;
-  setorResponsavel: string;
-  pontosFocais:     string[];
-  metas:            Meta[];
+  id:           string;
+  descricao:    string;
+  setorId:      string | null;
+  setorNome:    string | null;
+  pontosFocais: string[];
+  metas:        Meta[];
 }
 
 interface Tema {
@@ -157,6 +160,12 @@ function MetaCard({ meta, liveStatus, liveLog }: { meta: Meta; liveStatus?: Meta
         <Target size={14} className="text-primary mt-0.5 shrink-0" />
         <div className="flex-1 min-w-0">
           <p className="text-sm text-foreground leading-snug">{meta.descricao}</p>
+          {(status === "Concluido" || status === "AguardandoRetorno") && meta.approvedAt && (
+            <p className="text-[10px] text-muted-foreground mt-1">
+              {status === "Concluido" ? "Aprovado" : "Devolvido"} em{" "}
+              {new Date(meta.approvedAt).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+            </p>
+          )}
           <div className="flex items-center gap-2 mt-2 flex-wrap relative">
             {canChangeStatus && availableStatuses.length > 0 ? (
               <StatusSelector current={status} available={availableStatuses} onSelect={handleStatusChange} loading={loading} />
@@ -294,6 +303,7 @@ function StatusSelector({ current, available, onSelect, loading }: StatusSelecto
 interface TopicoCardProps {
   topico:            Topico;
   onAddMeta:         (topicoId: string) => void;
+  onTopicUpdated?:   () => void;
   liveStatuses:      Map<string, MetaStatus>;
   documents:         TopicoDocumento[];
   onDocumentsChange: (topicoId: string, docs: TopicoDocumento[]) => void;
@@ -301,7 +311,7 @@ interface TopicoCardProps {
   liveMetaLogs:      Map<string, MetaStatusLog>;
 }
 
-function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsChange, liveDocLogs, liveMetaLogs }: TopicoCardProps) {
+function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents, onDocumentsChange, liveDocLogs, liveMetaLogs }: TopicoCardProps) {
   const { user } = useAuth();
   const [expanded, setExpanded]         = useState(false);
   const [hasFetched, setHasFetched]     = useState(false);
@@ -309,6 +319,11 @@ function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsCha
   const [isUploading, setIsUploading]   = useState(false);
   const [isDragging, setIsDragging]     = useState(false);
   const [draggedFile, setDraggedFile]   = useState<File | null>(null);
+
+  // Edit topico state
+  const [isEditOpen, setIsEditOpen]     = useState(false);
+  const [editForm, setEditForm]         = useState({ descricao: "", setorId: null as string | null, pontosFocais: "", nomePastaDrive: "" });
+  const [isSavingEdit, setIsSavingEdit] = useState(false);
   // Return modal state
   const [returnDocId, setReturnDocId]   = useState<string | null>(null);
   const [returnComment, setReturnComment] = useState("");
@@ -453,6 +468,26 @@ function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsCha
     }
   }
 
+  async function handleSaveEdit() {
+    if (!editForm.descricao.trim()) return;
+    setIsSavingEdit(true);
+    try {
+      await api.patch(`/topicos/${topico.id}`, {
+        descricao:      editForm.descricao,
+        setorId:        editForm.setorId || null,
+        pontosFocais:   editForm.pontosFocais.split(",").map((s) => s.trim()).filter(Boolean),
+        nomePastaDrive: editForm.nomePastaDrive.trim() || null,
+      });
+      toast.success("Meta atualizada com sucesso!");
+      setIsEditOpen(false);
+      onTopicUpdated?.();
+    } catch {
+      toast.error("Erro ao atualizar a meta.");
+    } finally {
+      setIsSavingEdit(false);
+    }
+  }
+
   // Append live log entries pushed via SignalR
   useEffect(() => {
     liveDocLogs.forEach((log, docId) => {
@@ -514,6 +549,56 @@ function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsCha
             <Button onClick={() => { if (draggedFile) uploadFile(draggedFile); }} disabled={isUploading}>
               {isUploading ? <Loader2 size={16} className="animate-spin mr-2" /> : <Upload size={16} className="mr-2" />}
               Confirmar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal edição de meta (tópico) */}
+      <Dialog open={isEditOpen} onOpenChange={(o) => { if (!o) setIsEditOpen(false); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Meta</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 flex flex-col gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Descrição</label>
+              <Input
+                value={editForm.descricao}
+                onChange={(e) => setEditForm((f) => ({ ...f, descricao: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Setor Responsável</label>
+              <SetorAutocomplete
+                value={editForm.setorId}
+                onChange={(v) => setEditForm((f) => ({ ...f, setorId: v }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Pontos Focais (separados por vírgula)</label>
+              <Input
+                placeholder="Ex: João Silva, Maria Souza"
+                value={editForm.pontosFocais}
+                onChange={(e) => setEditForm((f) => ({ ...f, pontosFocais: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+                Nome da pasta no Drive <span className="normal-case font-normal text-muted-foreground/70">(opcional)</span>
+              </label>
+              <Input
+                placeholder="Deixe em branco para manter o atual"
+                value={editForm.nomePastaDrive}
+                onChange={(e) => setEditForm((f) => ({ ...f, nomePastaDrive: e.target.value }))}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsEditOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveEdit} disabled={isSavingEdit || !editForm.descricao.trim()}>
+              {isSavingEdit ? <Loader2 size={16} className="animate-spin mr-2" /> : <Check size={16} className="mr-2" />}
+              Salvar
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -596,7 +681,7 @@ function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsCha
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground leading-snug line-clamp-2">{topico.descricao}</p>
               <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-1.5">
-                <span className="text-[11px] text-muted-foreground max-w-[140px] sm:max-w-none truncate">{topico.setorResponsavel}</span>
+                <span className="text-[11px] text-muted-foreground max-w-[140px] sm:max-w-none truncate">{topico.setorNome ?? "—"}</span>
                 <span className="text-[11px] text-muted-foreground hidden sm:inline">·</span>
                 <span className="text-[11px] text-primary font-medium hidden sm:inline">{done}/{total} concluídas</span>
                 {documents.length > 0 && (
@@ -638,9 +723,22 @@ function TopicoCard({ topico, onAddMeta, liveStatuses, documents, onDocumentsCha
                     ))}
                   </div>
                   {user?.role === "Admin" && (
-                    <Button size="sm" variant="ghost" className="h-7 text-[10px] gap-1 px-2" onClick={() => onAddMeta(topico.id)}>
-                      <Plus size={12} />Criar Objetivo
-                    </Button>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        size="sm" variant="ghost"
+                        className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
+                        title="Editar meta"
+                        onClick={() => {
+                          setEditForm({ descricao: topico.descricao, setorId: topico.setorId, pontosFocais: topico.pontosFocais.join(", "), nomePastaDrive: "" });
+                          setIsEditOpen(true);
+                        }}
+                      >
+                        <Pencil size={12} />
+                      </Button>
+                      <Button size="sm" variant="ghost" className="h-7 text-[10px] gap-1 px-2" onClick={() => onAddMeta(topico.id)}>
+                        <Plus size={12} />Criar Objetivo
+                      </Button>
+                    </div>
                   )}
                 </div>
                 {[...topico.metas].sort((a, b) => a.descricao.localeCompare(b.descricao)).map((meta) => (
@@ -894,10 +992,15 @@ export function TemasView() {
   const [newTemaName, setNewTemaName] = useState("");
   const [isCreatingTema, setIsCreatingTema] = useState(false);
 
+  // Edit Theme state
+  const [editTema, setEditTema]           = useState<Tema | null>(null);
+  const [editTemaName, setEditTemaName]   = useState("");
+  const [isSavingTema, setIsSavingTema]   = useState(false);
+
   // New Topic state
   const [isTopicDialogOpen, setIsTopicDialogOpen] = useState(false);
   const [selectedTemaId, setSelectedTemaId] = useState<string | null>(null);
-  const [newTopic, setNewTopic] = useState({ descricao: "", setorResponsavel: [] as string[], pontosFocais: "", nomePastaDrive: "" });
+  const [newTopic, setNewTopic] = useState({ descricao: "", setorId: null as string | null, pontosFocais: "", nomePastaDrive: "" });
   const [isCreatingTopic, setIsCreatingTopic] = useState(false);
 
   // New Meta state
@@ -1019,6 +1122,21 @@ export function TemasView() {
     }
   }
 
+  async function handleSaveTema() {
+    if (!editTema || !editTemaName.trim()) return;
+    setIsSavingTema(true);
+    try {
+      await api.patch(`/temas/${editTema.id}`, { nome: editTemaName });
+      toast.success("Tema atualizado com sucesso!");
+      setEditTema(null);
+      fetchTemas();
+    } catch {
+      toast.error("Erro ao atualizar o tema.");
+    } finally {
+      setIsSavingTema(false);
+    }
+  }
+
   async function handleCreateTopic() {
     if (!selectedTemaId || !newTopic.descricao.trim()) return;
     setIsCreatingTopic(true);
@@ -1026,13 +1144,13 @@ export function TemasView() {
       await api.post("/topicos", {
         temaId: selectedTemaId,
         descricao: newTopic.descricao,
-        setorResponsavel: newTopic.setorResponsavel.join(","),
+        setorId: newTopic.setorId,
         pontosFocais: newTopic.pontosFocais.split(",").map(s => s.trim()).filter(Boolean),
         nomePastaDrive: newTopic.nomePastaDrive.trim() || null,
       });
       toast.success("Meta criada com sucesso!");
       setIsTopicDialogOpen(false);
-      setNewTopic({ descricao: "", setorResponsavel: [], pontosFocais: "", nomePastaDrive: "" });
+      setNewTopic({ descricao: "", setorId: null, pontosFocais: "", nomePastaDrive: "" });
       fetchTemas();
     } catch {
       toast.error("Erro ao criar a meta.");
@@ -1073,9 +1191,9 @@ export function TemasView() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-2">
-            <h2 className="text-xl font-bold text-foreground">Temas & Etapas</h2>
+            <h2 className="text-xl font-bold text-foreground">Temas & Metas</h2>
           </div>
-          <p className="text-sm text-muted-foreground mt-0.5">Hierarquia: Tema → Etapa → Objetivo</p>
+          <p className="text-sm text-muted-foreground mt-0.5">Hierarquia: Tema → Metas → Objetivo</p>
         </div>
         {user?.role === "Admin" && (
           <Button onClick={() => setIsTemaDialogOpen(true)} className="gap-2 text-white">
@@ -1111,6 +1229,32 @@ export function TemasView() {
         </DialogContent>
       </Dialog>
 
+      {/* Edit Tema Dialog */}
+      <Dialog open={!!editTema} onOpenChange={(o) => { if (!o) setEditTema(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Tema</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 flex flex-col gap-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Nome do Tema</label>
+              <Input
+                value={editTemaName}
+                onChange={(e) => setEditTemaName(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") handleSaveTema(); }}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditTema(null)}>Cancelar</Button>
+            <Button onClick={handleSaveTema} disabled={isSavingTema || !editTemaName.trim()}>
+              {isSavingTema ? <Loader2 size={16} className="animate-spin mr-2" /> : <Check size={16} className="mr-2" />}
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Create Topic Dialog */}
       <Dialog open={isTopicDialogOpen} onOpenChange={setIsTopicDialogOpen}>
         <DialogContent>
@@ -1129,8 +1273,8 @@ export function TemasView() {
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Setor Responsável</label>
               <SetorAutocomplete
-                value={newTopic.setorResponsavel}
-                onChange={(v) => setNewTopic((prev) => ({ ...prev, setorResponsavel: v }))}
+                value={newTopic.setorId}
+                onChange={(v) => setNewTopic((prev) => ({ ...prev, setorId: v }))}
               />
             </div>
             <div className="space-y-1.5">
@@ -1227,9 +1371,22 @@ export function TemasView() {
               <div className="flex items-center gap-3 sm:shrink-0 justify-between sm:justify-end mt-1 sm:mt-0 pl-12 sm:pl-0">
                 {user?.role === "Admin" && (
                   <>
-                    <Button 
-                      size="sm" 
-                      variant="ghost" 
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground border border-border/40"
+                      title="Editar tema"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setEditTema(tema);
+                        setEditTemaName(tema.nome);
+                      }}
+                    >
+                      <Pencil size={14} />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
                       className="h-8 text-[11px] gap-1 px-3 border border-border/40"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -1286,6 +1443,7 @@ export function TemasView() {
                           setSelectedTopicoId(id);
                           setIsMetaDialogOpen(true);
                         }}
+                        onTopicUpdated={fetchTemas}
                       />
                     ))}
                     {tema.topicos.length === 0 && (
