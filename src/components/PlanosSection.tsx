@@ -405,12 +405,15 @@ function TemaCard({
   const pct = total > 0 ? Math.round((concluidas / total) * 100) : 0;
 
   return (
-    <motion.button
+    <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: index * 0.05, ease: [0.22, 1, 0.36, 1] }}
+      role="button"
+      tabIndex={0}
       onClick={onClick}
-      className={`w-full text-left group transition-all duration-300 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#42b9eb]/50 ${
+      onKeyDown={(e) => e.key === "Enter" && onClick()}
+      className={`w-full text-left group cursor-pointer transition-all duration-300 rounded-2xl outline-none focus-visible:ring-2 focus-visible:ring-[#42b9eb]/50 ${
         selected
           ? "ring-1 ring-[#42b9eb]/40 shadow-[0_0_28px_hsl(196_100%_40%/0.12)]"
           : ""
@@ -482,7 +485,7 @@ function TemaCard({
           </span>
         </div>
       </SpotlightCard>
-    </motion.button>
+    </motion.div>
   );
 }
 
