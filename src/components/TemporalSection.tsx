@@ -119,10 +119,8 @@ export function TemporalSection() {
     () =>
       (data?.evolucaoMensal ?? []).map((m) => ({
         name: m.mes,
-        "Não Iniciadas": m.naoIniciadas,
         "Em Andamento": m.emAndamento,
         Concluídas: m.concluidas,
-        Aguardando: m.aguardandoRetorno,
       })),
     [data]
   );
@@ -282,11 +280,6 @@ export function TemporalSection() {
                       }}
                     />
                     <Bar
-                      dataKey="Não Iniciadas"
-                      fill="hsl(220 9% 46%)"
-                      radius={[6, 6, 0, 0]}
-                    />
-                    <Bar
                       dataKey="Em Andamento"
                       fill="hsl(43 96% 56%)"
                       radius={[6, 6, 0, 0]}
@@ -294,11 +287,6 @@ export function TemporalSection() {
                     <Bar
                       dataKey="Concluídas"
                       fill="hsl(189 100% 44%)"
-                      radius={[6, 6, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="Aguardando"
-                      fill="hsl(25 95% 53%)"
                       radius={[6, 6, 0, 0]}
                     />
                   </BarChart>
@@ -359,16 +347,6 @@ export function TemporalSection() {
                             label: "Doc. Gerado",
                             value: currentMes.documentosGerados,
                             cls: "text-[#42b9eb]",
-                          },
-                          {
-                            label: "Não Iniciadas",
-                            value: currentMes.naoIniciadas,
-                            cls: "text-white/40",
-                          },
-                          {
-                            label: "Aguardando",
-                            value: currentMes.aguardando,
-                            cls: "text-orange-400",
                           },
                         ].map((item) => (
                           <div
