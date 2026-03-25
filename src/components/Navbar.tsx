@@ -2,10 +2,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useTheme } from "next-themes";
 import Image from "next/image";
 import {
-  Sun, Moon, LayoutList, CheckCircle2, Clock3, FileCheck2,
+  LayoutList, CheckCircle2, Clock3, FileCheck2,
   BarChart3, Calendar, LayoutDashboard, Home, LogOut, ChevronDown,
   Menu, X, Flag, Milestone, BarChart2, CalendarDays, Target,
 } from "lucide-react";
@@ -263,7 +262,6 @@ export function Navbar() {
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted]         = useState(false);
-  const { theme, setTheme }           = useTheme();
   const { user, logout }              = useAuth();
 
   useEffect(() => { setMounted(true); }, []);
@@ -293,12 +291,12 @@ export function Navbar() {
   }, []);
 
   return (
-    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-[95%] md:max-w-fit">
+    <div className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
       <motion.nav
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className={`flex items-center justify-between gap-2 px-3 md:px-4 py-2 rounded-2xl bg-white/[0.88] dark:bg-slate-900/[0.82] backdrop-blur-xl transition-all duration-300 w-full md:w-auto ${
+        className={`flex items-center justify-between md:justify-center gap-4 md:gap-6 px-4 md:px-6 py-2 rounded-2xl bg-white/[0.88] dark:bg-slate-900/[0.82] backdrop-blur-xl transition-all duration-300 w-full md:w-fit md:mx-auto ${
           scrolled
             ? "shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_4px_12px_rgba(0,0,0,0.08),0_16px_40px_rgba(0,180,180,0.07)] dark:shadow-[0_0_0_1px_rgba(0,180,180,0.12),0_4px_16px_rgba(0,0,0,0.5),0_20px_60px_rgba(0,180,180,0.10)]"
             : "shadow-[0_0_0_1px_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,180,180,0.05)] dark:shadow-[0_0_0_1px_rgba(0,180,180,0.08),0_2px_8px_rgba(0,0,0,0.35),0_12px_36px_rgba(0,180,180,0.08)]"
@@ -385,30 +383,10 @@ export function Navbar() {
             <UserCard />
           ) : mounted && !user ? (
             <Link href="/login"
-              className="flex items-center text-xs md:text-sm font-medium px-3 md:px-4 py-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all">
+              className="flex text-white items-center text-xs md:text-sm font-medium px-3 md:px-4 py-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all">
               Login
             </Link>
           ) : null}
-
-          <div className="w-px h-4 bg-border/40 hidden md:block mx-1" />
-
-          {/* Theme toggle */}
-          <button
-            onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-            className="flex items-center justify-center w-8 h-8 rounded-full border border-border/50 bg-background/80 text-muted-foreground hover:text-foreground hover:border-primary/50 transition-all duration-200"
-            aria-label="Alternar tema"
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              <motion.span key={theme}
-                initial={{ rotate: -90, opacity: 0 }}
-                animate={{ rotate: 0, opacity: 1 }}
-                exit={{ rotate: 90, opacity: 0 }}
-                transition={{ duration: 0.15 }}
-              >
-                {mounted && (theme === "dark" ? <Sun size={14} /> : <Moon size={14} />)}
-              </motion.span>
-            </AnimatePresence>
-          </button>
         </div>
       </motion.nav>
 

@@ -78,6 +78,8 @@ export interface ApiMeta {
   status: MetaStatus;
   documentUrl: string | null;
   approverComment: string | null;
+  approvedByUserId: string | null;
+  approvedAt: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -86,7 +88,8 @@ export interface ApiTopico {
   id: string;
   temaId: string;
   descricao: string;
-  setorResponsavel: string;
+  setorId: string | null;
+  setorNome: string | null;
   pontosFocais: string[];
   createdAt: string;
   updatedAt: string;
