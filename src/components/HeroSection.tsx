@@ -138,14 +138,28 @@ export function HeroSection() {
                 rootMargin="0px"
                 className="text-5xl lg:text-6xl xl:text-7xl font-display font-semibold leading-tight tracking-tight text-white"
               />
-              <motion.span
-                initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{ duration: 0.7, delay: 0.48, ease: [0.22, 1, 0.36, 1] }}
-                className="text-5xl lg:text-6xl xl:text-7xl font-display font-bold leading-tight tracking-tight bg-gradient-to-r from-[#42b9eb] to-[#7dd3f8] bg-clip-text text-transparent"
-              >
-                Metas
-              </motion.span>
+              <div className="flex items-baseline gap-4">
+                <motion.span
+                  initial={{ opacity: 0, y: 28, filter: "blur(6px)" }}
+                  animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                  transition={{ duration: 0.7, delay: 0.48, ease: [0.22, 1, 0.36, 1] }}
+                  className="text-5xl lg:text-6xl xl:text-7xl font-display font-bold leading-tight tracking-tight bg-gradient-to-r from-[#42b9eb] to-[#7dd3f8] bg-clip-text text-transparent"
+                >
+                  Metas
+                </motion.span>
+                <span className="flex text-2xl lg:text-3xl xl:text-4xl font-display font-semibold text-white/30 tracking-tight">
+                  {"25 - 26".split("").map((char, i) => (
+                    <motion.span
+                      key={i}
+                      initial={{ opacity: 0, y: 12 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: 0.72 + i * 0.055, ease: [0.22, 1, 0.36, 1] }}
+                    >
+                      {char === " " ? "\u00A0" : char}
+                    </motion.span>
+                  ))}
+                </span>
+              </div>
             </div>
 
             {/* Logos */}
@@ -167,7 +181,7 @@ export function HeroSection() {
               transition={{ delay: 0.70 }}
               className="text-white/45 text-sm leading-relaxed"
             >
-              Secretaria Municipal de Saúde · SUBG · TCMRio 2025
+              Secretaria Municipal de Saúde · SUBG
             </motion.p>
 
             {/* Botão */}
