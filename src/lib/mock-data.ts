@@ -47,11 +47,11 @@ export const marcos: Marco[] = [
 ];
 
 export const planos: PlanoDeAcao[] = [
-  { id: "1", code: "PA01", title: "Contratações Diretas", description: "Promover medidas mitigatórias de forma a reduzir a ocorrência de contratações diretas, de forma emergencial, sem as devidas exigências e/ou conformidades legais.", area: "DAF, NPC", created_at: "2025-01-10" },
-  { id: "2", code: "PA02", title: "Gestão de Pessoal", description: "Aprimorar os processos de gestão de pessoal, garantindo conformidade e eficiência nos procedimentos administrativos.", area: "RH", created_at: "2025-01-10" },
-  { id: "3", code: "PA03", title: "Controle de Almoxarifado", description: "Implementar sistema de controle de almoxarifado com rastreabilidade e inventário periódico.", area: "NGMC, DOP", created_at: "2025-01-15" },
-  { id: "4", code: "PA04", title: "Prestação de Contas", description: "Garantir a tempestividade e conformidade das prestações de contas dos convênios e contratos.", area: "DAF", created_at: "2025-01-20" },
-  { id: "5", code: "PA05", title: "Infraestrutura Tecnológica", description: "Modernizar a infraestrutura tecnológica das unidades de saúde.", area: "TI", created_at: "2025-02-01" },
+    { id: "1", code: "PA01", title: "Contratações Diretas", description: "Promover medidas mitigatórias de forma a reduzir a ocorrência de contratações diretas, de forma emergencial, sem as devidas exigências e/ou conformidades legais.", area: "DAF, NPC", created_at: "2026-01-10" },
+    { id: "2", code: "PA02", title: "Gestão de Pessoal", description: "Aprimorar os processos de gestão de pessoal, garantindo conformidade e eficiência nos procedimentos administrativos.", area: "RH", created_at: "2026-01-10" },
+    { id: "3", code: "PA03", title: "Controle de Almoxarifado", description: "Implementar sistema de controle de almoxarifado com rastreabilidade e inventário periódico.", area: "NGMC, DOP", created_at: "2026-01-15" },
+    { id: "4", code: "PA04", title: "Prestação de Contas", description: "Garantir a tempestividade e conformidade das prestações de contas dos convênios e contratos.", area: "DAF", created_at: "2026-01-20" },
+    { id: "5", code: "PA05", title: "Infraestrutura Tecnológica", description: "Modernizar a infraestrutura tecnológica das unidades de saúde.", area: "TI", created_at: "2026-02-01" },
 ];
 
 const generateEtapas = (): Etapa[] => {
@@ -76,7 +76,7 @@ const generateEtapas = (): Etapa[] => {
         tema: `${i} – ${plan.title}`,
         relacao_direta: plan.code,
         area: plan.area,
-        prazo: `2025-${month}-${day}`,
+        prazo: `2026-${month}-${day}`,
         status: st,
         documento_comprobatorio: st === "Concluída" || st === "Documento Gerado" ? "Documento Gerado" : "",
         drive_link: st === "Concluída" || st === "Documento Gerado" ? `https://drive.google.com/file/d/example${id}` : "",

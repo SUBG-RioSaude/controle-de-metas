@@ -122,7 +122,7 @@ function DropdownAnalise() {
         <div className="flex flex-col gap-0.5">
           <span className="text-sm font-semibold text-foreground">Evolução Mensal</span>
           <span className="text-[11px] text-muted-foreground leading-relaxed">
-            Distribuição de etapas por mês e status ao longo de 2025.
+            Distribuição de etapas por mês e status ao longo de 2026.
           </span>
         </div>
       </div>

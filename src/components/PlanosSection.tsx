@@ -70,7 +70,7 @@ function temaToPlano(tema: ApiTema, index: number): PlanoDeAcao {
     title: tema.nome.replace(/ \(.*\)$/, ""),
     description: tema.topicos[0]?.descricao ?? "—",
     area:
-      [...new Set(tema.topicos.map((t) => t.setorNome).filter(Boolean))].join(", ") || "—",
+      [...new Set(tema.topicos.flatMap((t) => t.setorNomes).filter(Boolean))].join(", ") || "—",
     created_at: tema.createdAt,
   };
 }
@@ -88,7 +88,7 @@ function temaToEtapas(tema: ApiTema, code: string): Etapa[] {
         description: meta.descricao,
         tema: topico.descricao,
         relacao_direta: code,
-        area: topico.setorNome || "—",
+        area: topico.setorNomes.join(", ") || "—",
         prazo: "—",
         status: mapStatus(meta.status),
         documento_comprobatorio: meta.documentUrl ? "Documento" : "",
@@ -195,9 +195,9 @@ function TopicoAccordionItem({
 
         {/* Setor + chevron */}
         <div className="flex items-center gap-2 shrink-0 mt-0.5">
-          {topico.setorNome && (
+          {topico.setorNomes.length > 0 && (
             <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#42b9eb]/10 border border-[#42b9eb]/20 text-[#42b9eb] text-center">
-              {topico.setorNome}
+              {topico.setorNomes.join(", ")}
             </span>
           )}
           <ChevronDown className="w-3.5 h-3.5 text-white/25 transition-transform duration-200 group-data-[state=open]/item:rotate-180 shrink-0" />

@@ -10,7 +10,7 @@ export function AnaliseSection() {
   const monthlyData = useMemo(() => {
     const months: Record<string, { naoIniciadas: number; emAndamento: number; concluidas: number }> = {};
     for (let m = 1; m <= 12; m++) {
-      const key = `2025/${String(m).padStart(2, "0")}`;
+      const key = `2026/${String(m).padStart(2, "0")}`;
       months[key] = { naoIniciadas: 0, emAndamento: 0, concluidas: 0 };
     }
     etapas.forEach((e) => {
@@ -39,7 +39,7 @@ export function AnaliseSection() {
             Evolução Temporal
           </h2>
           <p className="text-muted-foreground max-w-lg text-lg">
-            Distribuição das etapas por mês e status ao longo de 2025.
+            Distribuição das etapas por mês e status ao longo de 2026.
           </p>
         </motion.div>
 

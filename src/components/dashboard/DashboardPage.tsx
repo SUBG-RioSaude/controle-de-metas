@@ -146,7 +146,7 @@ export function DashboardPage() {
           </button>
           <LayoutDashboard size={18} className="text-primary hidden md:block" />
           <h1 className="text-base font-semibold text-foreground">Dashboard</h1>
-          <div className="ml-auto text-xs text-muted-foreground hidden sm:block">Plano de Ação 2025</div>
+          <div className="ml-auto text-xs text-muted-foreground hidden sm:block">Plano de Ação 2026</div>
         </div>
 
         {/* View */}

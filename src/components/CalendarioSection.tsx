@@ -10,12 +10,12 @@ import { X } from "lucide-react";
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => {
   const m = String(i + 1).padStart(2, "0");
-  return { label: `2025/${m}`, value: `2025-${m}` };
+  return { label: `2026/${m}`, value: `2026-${m}` };
 });
 const WEEKDAYS = ["Dom", "Seg", "Ter", "Quar", "Qui", "Sex", "Sáb"];
 
 export function CalendarioSection() {
-  const [selectedMonth, setSelectedMonth] = useState("2025-02");
+  const [selectedMonth, setSelectedMonth] = useState("2026-02");
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
 
   const monthEtapas = useMemo(() => etapas.filter((e) => e.prazo.startsWith(selectedMonth)), [selectedMonth]);
@@ -68,7 +68,7 @@ export function CalendarioSection() {
             Visão Temporal
           </h2>
           <p className="text-muted-foreground max-w-lg text-lg">
-            Explore as etapas distribuídas ao longo dos meses de 2025.
+            Explore as etapas distribuídas ao longo dos meses de 2026.
           </p>
         </motion.div>
 
