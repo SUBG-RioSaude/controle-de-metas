@@ -166,9 +166,9 @@ export function HeroSection() {
                   style={{ color: "#0d2a47" }}
                 >
                   {flipActive ? (
-                    <FlipWords words={["2026", "2025"]} duration={2500} />
+                    <FlipWords words={["2025", "2026"]} duration={2500} />
                   ) : (
-                    <span>2025</span>
+                    <span>2026</span>
                   )}
                 </motion.span>
               </div>

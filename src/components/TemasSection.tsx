@@ -81,9 +81,9 @@ function TopicoAccordionItem({ topico, index }: { topico: ApiTopico; index: numb
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          {topico.setorNome && (
+          {topico.setorNomes.length > 0 && (
             <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#42b9eb]/10 border border-[#42b9eb]/20 text-[#42b9eb]">
-              {topico.setorNome}
+              {topico.setorNomes.join(", ")}
             </span>
           )}
           <span className="text-[10px] text-white/30 tabular-nums whitespace-nowrap">

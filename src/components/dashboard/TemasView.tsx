@@ -63,8 +63,8 @@ interface TopicoDocumento {
 interface Topico {
   id:           string;
   descricao:    string;
-  setorId:      string | null;
-  setorNome:    string | null;
+  setorIds:   string[];
+  setorNomes: string[];
   pontosFocais: string[];
   metas:        Meta[];
 }
@@ -322,12 +322,19 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
 
   // Edit topico state
   const [isEditOpen, setIsEditOpen]     = useState(false);
-  const [editForm, setEditForm]         = useState({ descricao: "", setorId: null as string | null, pontosFocais: "", nomePastaDrive: "" });
+  const [editForm, setEditForm]         = useState({ descricao: "", setorIds: [] as string[], pontosFocais: "", nomePastaDrive: "" });
   const [isSavingEdit, setIsSavingEdit] = useState(false);
   // Return modal state
   const [returnDocId, setReturnDocId]   = useState<string | null>(null);
   const [returnComment, setReturnComment] = useState("");
   const [isReturning, setIsReturning]   = useState(false);
+
+  // Approval modal state
+  const [approvalDocId, setApprovalDocId]   = useState<string | null>(null);
+  const [approvalMode, setApprovalMode]     = useState<"move" | "upload" | null>(null);
+  const [approvalFile, setApprovalFile]     = useState<File | null>(null);
+  const [isApproving, setIsApproving]       = useState(false);
+  const approvalFileInputRef                = useRef<HTMLInputElement>(null);
   
   // Specific loading states for actions
   const [approvingId, setApprovingId]     = useState<string | null>(null);
@@ -374,6 +381,10 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
   }, [expanded]);
 
   async function uploadFile(file: File) {
+    if (!ALLOWED_STAGING_EXTS.includes(getExt(file.name))) {
+      toast.error("Formato inválido. Apenas .doc, .docx e .pdf são permitidos.");
+      return;
+    }
     setIsUploading(true);
     setDraggedFile(null);
     if (!expanded) setExpanded(true);
@@ -403,6 +414,11 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
     const file = e.target.files?.[0];
     const docId = reuploadDocIdRef.current;
     if (!file || !docId) return;
+    if (!ALLOWED_STAGING_EXTS.includes(getExt(file.name))) {
+      toast.error("Formato inválido. Apenas .doc, .docx e .pdf são permitidos.");
+      if (reuploadInputRef.current) reuploadInputRef.current.value = "";
+      return;
+    }
     setReuploadingId(docId);
     const formData = new FormData();
     formData.append("file", file);
@@ -421,18 +437,65 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
     }
   }
 
-  async function handleApprove(docId: string) {
-    setApprovingId(docId);
+  const ALLOWED_STAGING_EXTS  = [".doc", ".docx", ".pdf"];
+  const ALLOWED_OFFICIAL_EXTS = [".pdf"];
+  const getExt = (name: string) => name.slice(name.lastIndexOf(".")).toLowerCase();
+  const isPdf  = (name: string) => getExt(name) === ".pdf";
+
+  function openApprovalModal(docId: string) {
+    setApprovalDocId(docId);
+    setApprovalMode(null);
+    setApprovalFile(null);
+  }
+
+  function closeApprovalModal() {
+    setApprovalDocId(null);
+    setApprovalMode(null);
+    setApprovalFile(null);
+    if (approvalFileInputRef.current) approvalFileInputRef.current.value = "";
+  }
+
+  async function handleApproveMove() {
+    if (!approvalDocId) return;
+    setIsApproving(true);
     try {
       const r = await api.post<{ data: TopicoDocumento }>(
-        `/topicos/${topico.id}/documents/${docId}/approve`, {}
+        `/topicos/${topico.id}/documents/${approvalDocId}/approve`, {}
       );
-      onDocumentsChange(topico.id, documents.map((d) => d.id === docId ? r.data.data : d));
+      onDocumentsChange(topico.id, documents.map((d) => d.id === approvalDocId ? r.data.data : d));
       toast.success("Documento aprovado e movido para o Drive oficial!");
-    } catch {
-      toast.error("Erro ao aprovar o documento.");
+      closeApprovalModal();
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
+      toast.error(msg ?? "Erro ao aprovar o documento.");
     } finally {
-      setApprovingId(null);
+      setIsApproving(false);
+    }
+  }
+
+  async function handleApproveWithFile() {
+    if (!approvalDocId || !approvalFile) return;
+    if (!ALLOWED_OFFICIAL_EXTS.includes(getExt(approvalFile.name))) {
+      toast.error("A pasta oficial aceita apenas arquivos .pdf.");
+      return;
+    }
+    setIsApproving(true);
+    const formData = new FormData();
+    formData.append("file", approvalFile);
+    try {
+      const r = await api.post<{ data: TopicoDocumento }>(
+        `/topicos/${topico.id}/documents/${approvalDocId}/approve-with-file`, formData,
+        { headers: { "Content-Type": "multipart/form-data" } }
+      );
+      onDocumentsChange(topico.id, documents.map((d) => d.id === approvalDocId ? r.data.data : d));
+      toast.success("Arquivo corrigido aprovado e enviado para o Drive oficial!");
+      closeApprovalModal();
+    } catch (err: unknown) {
+      const msg = (err as { response?: { data?: { error?: string } } })?.response?.data?.error;
+      toast.error(msg ?? "Erro ao aprovar o documento.");
+    } finally {
+      setIsApproving(false);
+      if (approvalFileInputRef.current) approvalFileInputRef.current.value = "";
     }
   }
 
@@ -474,7 +537,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
     try {
       await api.patch(`/topicos/${topico.id}`, {
         descricao:      editForm.descricao,
-        setorId:        editForm.setorId || null,
+        setorIds:       editForm.setorIds,
         pontosFocais:   editForm.pontosFocais.split(",").map((s) => s.trim()).filter(Boolean),
         nomePastaDrive: editForm.nomePastaDrive.trim() || null,
       });
@@ -571,8 +634,8 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Setor Responsável</label>
               <SetorAutocomplete
-                value={editForm.setorId}
-                onChange={(v) => setEditForm((f) => ({ ...f, setorId: v }))}
+                value={editForm.setorIds}
+                onChange={(v) => setEditForm((f) => ({ ...f, setorIds: v }))}
               />
             </div>
             <div className="space-y-1.5">
@@ -605,6 +668,72 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
       </Dialog>
 
       {/* Modal devolução */}
+      {/* ── Approval Modal ──────────────────────────────────────────────────── */}
+      <Dialog open={!!approvalDocId} onOpenChange={(o) => { if (!o) closeApprovalModal(); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Aprovar documento</DialogTitle>
+          </DialogHeader>
+          <div className="py-2 flex flex-col gap-3">
+            <p className="text-sm text-muted-foreground">Escolha como deseja aprovar o documento:</p>
+
+            {/* Opção A — mover arquivo atual */}
+            {(() => {
+              const doc = documents.find((d) => d.id === approvalDocId);
+              const canMove = doc ? isPdf(doc.nome) : false;
+              return (
+                <button
+                  type="button"
+                  onClick={() => setApprovalMode("move")}
+                  disabled={!canMove}
+                  className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
+                    approvalMode === "move"
+                      ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10"
+                      : canMove
+                        ? "border-border/50 hover:border-emerald-300 hover:bg-emerald-50/50 dark:hover:bg-emerald-500/5"
+                        : "border-border/30 opacity-40 cursor-not-allowed"
+                  }`}
+                >
+                  <p className="text-sm font-semibold text-foreground">Mover arquivo atual para a pasta definitiva</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {canMove ? "O arquivo PDF atual será copiado para o Drive oficial." : "Indisponível — o arquivo não é PDF. Use a opção abaixo."}
+                  </p>
+                </button>
+              );
+            })()}
+
+            {/* Opção B — subir arquivo corrigido */}
+            <button
+              type="button"
+              onClick={() => { setApprovalMode("upload"); approvalFileInputRef.current?.click(); }}
+              className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
+                approvalMode === "upload"
+                  ? "border-primary bg-primary/5"
+                  : "border-border/50 hover:border-primary/40 hover:bg-primary/5"
+              }`}
+            >
+              <p className="text-sm font-semibold text-foreground">Subir arquivo corrigido em PDF</p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">
+                {approvalFile
+                  ? `Arquivo selecionado: ${approvalFile.name}`
+                  : "Clique para selecionar um PDF. Ele substituirá o staging e irá para a pasta oficial."}
+              </p>
+            </button>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={closeApprovalModal} disabled={isApproving}>Cancelar</Button>
+            <Button
+              onClick={approvalMode === "move" ? handleApproveMove : handleApproveWithFile}
+              disabled={isApproving || !approvalMode || (approvalMode === "upload" && !approvalFile)}
+              className="bg-emerald-500 hover:bg-emerald-600 text-white"
+            >
+              {isApproving ? <Loader2 size={14} className="animate-spin mr-2" /> : <ThumbsUp size={14} className="mr-2" />}
+              Confirmar aprovação
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={!!returnDocId} onOpenChange={(o) => { if (!o) { setReturnDocId(null); setReturnComment(""); } }}>
         <DialogContent>
           <DialogHeader><DialogTitle>Devolver documento para correção</DialogTitle></DialogHeader>
@@ -681,7 +810,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-foreground leading-snug line-clamp-2">{topico.descricao}</p>
               <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-1.5">
-                <span className="text-[11px] text-muted-foreground max-w-[140px] sm:max-w-none truncate">{topico.setorNome ?? "—"}</span>
+                <span className="text-[11px] text-muted-foreground max-w-[140px] sm:max-w-none truncate">{topico.setorNomes.length > 0 ? topico.setorNomes.join(", ") : "—"}</span>
                 <span className="text-[11px] text-muted-foreground hidden sm:inline">·</span>
                 <span className="text-[11px] text-primary font-medium hidden sm:inline">{done}/{total} concluídas</span>
                 {documents.length > 0 && (
@@ -729,7 +858,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                         className="h-7 w-7 p-0 text-muted-foreground hover:text-foreground"
                         title="Editar meta"
                         onClick={() => {
-                          setEditForm({ descricao: topico.descricao, setorId: topico.setorId, pontosFocais: topico.pontosFocais.join(", "), nomePastaDrive: "" });
+                          setEditForm({ descricao: topico.descricao, setorIds: topico.setorIds, pontosFocais: topico.pontosFocais.join(", "), nomePastaDrive: "" });
                           setIsEditOpen(true);
                         }}
                       >
@@ -756,7 +885,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                     </span>
                     {canUpload && (
                       <>
-                        <input ref={fileInputRef} type="file" className="hidden" onChange={handleFileChange} />
+                        <input ref={fileInputRef} type="file" accept=".doc,.docx,.pdf" className="hidden" onChange={handleFileChange} />
                         <Button
                           size="sm" variant="ghost"
                           className="h-7 text-[10px] gap-1.5 px-3 bg-white dark:bg-slate-900 border border-border/50 hover:bg-slate-100 dark:hover:bg-white/5 shadow-sm rounded-lg"
@@ -771,7 +900,8 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                   </div>
 
                   {/* Hidden reupload input */}
-                  <input ref={reuploadInputRef} type="file" className="hidden" onChange={handleReuploadChange} />
+                  <input ref={reuploadInputRef} type="file" accept=".doc,.docx,.pdf" className="hidden" onChange={handleReuploadChange} />
+                  <input ref={approvalFileInputRef} type="file" accept=".pdf" className="hidden" onChange={(e) => setApprovalFile(e.target.files?.[0] ?? null)} />
 
                   {docLoading ? (
                     <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground">
@@ -852,11 +982,11 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                               {isApprover && doc.status === "PendenteAprovacao" && (
                                 <>
                                   <button
-                                    onClick={() => handleApprove(doc.id)}
-                                    disabled={approvingId === doc.id || isReturning || reuploadingId !== null || deletingId !== null}
+                                    onClick={() => openApprovalModal(doc.id)}
+                                    disabled={isApproving || isReturning || reuploadingId !== null || deletingId !== null}
                                     className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
-                                    {approvingId === doc.id ? <Loader2 size={12} className="animate-spin" /> : <ThumbsUp size={12} />}
+                                    <ThumbsUp size={12} />
                                     Aprovar
                                   </button>
                                   <button
@@ -1000,7 +1130,7 @@ export function TemasView() {
   // New Topic state
   const [isTopicDialogOpen, setIsTopicDialogOpen] = useState(false);
   const [selectedTemaId, setSelectedTemaId] = useState<string | null>(null);
-  const [newTopic, setNewTopic] = useState({ descricao: "", setorId: null as string | null, pontosFocais: "", nomePastaDrive: "" });
+  const [newTopic, setNewTopic] = useState({ descricao: "", setorIds: [] as string[], pontosFocais: "", nomePastaDrive: "" });
   const [isCreatingTopic, setIsCreatingTopic] = useState(false);
 
   // New Meta state
@@ -1144,13 +1274,13 @@ export function TemasView() {
       await api.post("/topicos", {
         temaId: selectedTemaId,
         descricao: newTopic.descricao,
-        setorId: newTopic.setorId,
+        setorIds: newTopic.setorIds,
         pontosFocais: newTopic.pontosFocais.split(",").map(s => s.trim()).filter(Boolean),
         nomePastaDrive: newTopic.nomePastaDrive.trim() || null,
       });
       toast.success("Meta criada com sucesso!");
       setIsTopicDialogOpen(false);
-      setNewTopic({ descricao: "", setorId: null, pontosFocais: "", nomePastaDrive: "" });
+      setNewTopic({ descricao: "", setorIds: [], pontosFocais: "", nomePastaDrive: "" });
       fetchTemas();
     } catch {
       toast.error("Erro ao criar a meta.");
@@ -1273,8 +1403,8 @@ export function TemasView() {
             <div className="space-y-1.5">
               <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Setor Responsável</label>
               <SetorAutocomplete
-                value={newTopic.setorId}
-                onChange={(v) => setNewTopic((prev) => ({ ...prev, setorId: v }))}
+                value={newTopic.setorIds}
+                onChange={(v) => setNewTopic((prev) => ({ ...prev, setorIds: v }))}
               />
             </div>
             <div className="space-y-1.5">

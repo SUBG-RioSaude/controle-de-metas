@@ -69,7 +69,11 @@ function temaToPlano(tema: ApiTema, index: number): PlanoDeAcao {
     title: tema.nome.replace(/ \(.*\)$/, ""),
     description: tema.topicos[0]?.descricao ?? "—",
     area:
+<<<<<<< HEAD
       [...new Set(tema.topicos.flatMap((t) => t.setorNomes))].join(", ") || "—",
+=======
+      [...new Set(tema.topicos.flatMap((t) => t.setorNomes).filter(Boolean))].join(", ") || "—",
+>>>>>>> feat/limitandoUpload
     created_at: tema.createdAt,
   };
 }
@@ -88,7 +92,10 @@ function temaToEtapas(tema: ApiTema, code: string): Etapa[] {
         tema: topico.descricao,
         relacao_direta: code,
         area: topico.setorNomes.join(", ") || "—",
+<<<<<<< HEAD
         areas: topico.setorNomes,
+=======
+>>>>>>> feat/limitandoUpload
         prazo: "—",
         status: mapStatus(meta.status),
         documento_comprobatorio: meta.documentUrl ? "Documento" : "",
