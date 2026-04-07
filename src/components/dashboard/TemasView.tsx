@@ -266,7 +266,7 @@ function StatusSelector({ current, available, onSelect, loading }: StatusSelecto
               initial={{ opacity: 0, y: 8, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.95 }}
-              className="absolute left-0 bottom-full mb-2 w-48 bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-2xl z-[100] py-1.5 overflow-hidden"
+              className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-2xl z-[100] py-1.5 overflow-hidden"
             >
               {[...available].map((s) => {
                 const isSelected = current === s;
