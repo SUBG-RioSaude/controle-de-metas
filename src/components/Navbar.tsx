@@ -315,10 +315,6 @@ export function Navbar() {
             <Image src="/brand/logoazul.png"    alt="Prefeitura Rio Saúde" width={90} height={28} className="block dark:hidden object-contain md:w-[100px] md:h-[32px]" priority />
             <Image src="/brand/logobranca.png"  alt="Prefeitura Rio Saúde" width={90} height={28} className="hidden dark:block object-contain md:w-[100px] md:h-[32px]" priority />
           </div>
-          
-          <div className="w-px h-6 bg-border/40 hidden xs:block" />
-          
-          <Image src="/brand/tcmrio-logo.png" alt="TCMRio" width={64} height={24} className="object-contain hidden xs:block md:w-[72px] md:h-[28px]" priority />
         </div>
 
         <div className="w-px h-4 bg-border/40 mx-0.5 md:mx-1 hidden md:block" />
