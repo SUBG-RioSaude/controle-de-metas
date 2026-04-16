@@ -1,0 +1,101 @@
+name: GCP Deploy (Staging)
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [gcp-deploy]
+
+env:
+  PROJECT_ID: rj-sms-subg
+  REGION: us-central1
+  REGISTRY: us-central1-docker.pkg.dev/rj-sms-subg/controle-de-metas
+  SERVICE_NAME: controle-de-metas-staging
+
+jobs:
+  build:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      image: ${{ steps.meta.outputs.image }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Configure Docker for Artifact Registry
+        run: gcloud auth configure-docker us-central1-docker.pkg.dev --quiet
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Define image tag
+        id: meta
+        run: echo "image=${{ env.REGISTRY }}/controle-de-metas:staging-${{ github.sha }}" >> $GITHUB_OUTPUT
+
+      - name: Build & Push Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/controle-de-metas:staging
+            ${{ steps.meta.outputs.image }}
+          cache-from: type=gha,scope=gcp-metas
+          cache-to: type=gha,mode=max,scope=gcp-metas
+
+  deploy:
+    name: Deploy to Cloud Run
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    outputs:
+      url: ${{ steps.deploy.outputs.url }}
+    steps:
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Deploy to Cloud Run
+        id: deploy
+        run: |
+          # Variáveis NEXT_PUBLIC_* são injetadas em runtime (não em build-time).
+          # Veja src/app/layout.tsx — o acesso indireto a process.env impede o SWC
+          # de inline-ar os valores durante o build, permitindo configurar por ambiente.
+
+          # Delimitador customizado (^##^) é usado em --set-env-vars porque
+          # METAS_ALLOWED_ORIGINS contém vírgulas. Sem isso, o gcloud interpretaria
+          # cada URL como uma variável separada.
+          gcloud run deploy ${{ env.SERVICE_NAME }} \
+            --image ${{ needs.build.outputs.image }} \
+            --platform managed \
+            --region ${{ env.REGION }} \
+            --allow-unauthenticated \
+            --memory 512Mi \
+            --cpu 1 \
+            --timeout 60 \
+            --max-instances 2 \
+            --port 3000 \
+            --set-env-vars "^##^NODE_ENV=production##NEXT_TELEMETRY_DISABLED=1##METAS_PRODUCTION=TRUE##METAS_SMTP_HOST=smtp.gmail.com##METAS_SMTP_PORT=587##METAS_SMTP_USER=cdemetas@gmail.com##METAS_SMTP_FROM=cdemetas@gmail.com##METAS_APP_BASE_URL=http://metas.subgsms.rio##METAS_GOOGLE_DRIVE_FOLDER_ID=1tVh5BnioDtZZU84zNx_v-BVk1vOD41Oo##METAS_GOOGLE_DRIVE_OFICIAL_FOLDER_ID=16obiQ8BGz9pAttJ2WzYbid5NuvXbVxZK##METAS_ALLOWED_ORIGINS=https://metas.subgsms.rio,http://metas.subgsms.rio,http://localhost:3000##METAS_NOTIFICATION_SUPPRESS_ACTOR_EMAILS=joaoramos.smsrio@gmail.com" \
+            --update-env-vars "NEXT_PUBLIC_METAS_AUTH_API=${{ secrets.NEXT_PUBLIC_METAS_AUTH_API }},NEXT_PUBLIC_METAS_API=${{ secrets.NEXT_PUBLIC_METAS_API }},NEXT_PUBLIC_METAS_SUPPORT_API=${{ secrets.NEXT_PUBLIC_METAS_SUPPORT_API }},NEXT_PUBLIC_METAS_SYSTEMS_API=${{ secrets.NEXT_PUBLIC_METAS_SYSTEMS_API }},NEXT_PUBLIC_METAS_SYSTEM_ID=${{ secrets.NEXT_PUBLIC_METAS_SYSTEM_ID }},NEXT_PUBLIC_METAS_GOOGLE_CLIENT_ID=${{ secrets.NEXT_PUBLIC_METAS_GOOGLE_CLIENT_ID }},NEXT_PUBLIC_METAS_DISCORD_CATEGORY_ID=${{ secrets.NEXT_PUBLIC_METAS_DISCORD_CATEGORY_ID }}"
+
+          URL=$(gcloud run services describe ${{ env.SERVICE_NAME }} --region ${{ env.REGION }} --format 'value(status.url)')
+          echo "url=$URL" >> $GITHUB_OUTPUT
+
+      - name: Print deploy URL
+        run: echo "✅ Controle de Metas deployed at ${{ steps.deploy.outputs.url }}"
