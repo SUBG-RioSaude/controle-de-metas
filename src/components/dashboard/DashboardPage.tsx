@@ -7,19 +7,20 @@ import { TemasView } from "./TemasView";
 import { UsuariosView } from "./UsuariosView";
 import { MarcosView } from "./MarcosView";
 import { SetoresView } from "./SetoresView";
+import { IntegracoesView } from "./IntegracoesView";
 import { TicketWidget } from "./TicketWidget";
 import { NotificationBell } from "./NotificationBell";
 import { useMetaHub } from "@/hooks/useMetaHub";
 import { motion } from "framer-motion";
 import {
   LayoutDashboard, Users, Home, LogOut, ChevronRight,
-  BarChart3, Target, Flag, Building2, Menu
+  BarChart3, Target, Flag, Building2, Menu, Plug
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Role } from "@/lib/auth";
 
-type View = "temas" | "usuarios" | "marcos" | "setores";
+type View = "temas" | "usuarios" | "marcos" | "setores" | "integracoes";
 
 const ROLE_BADGE: Record<Role, { label: string; color: string }> = {
   Pending:      { label: "Pendente",     color: "bg-amber-400/15 text-amber-400 border-amber-400/20" },
@@ -32,17 +33,21 @@ const ROLE_BADGE: Record<Role, { label: string; color: string }> = {
 export function DashboardPage() {
   const { user, logout } = useAuth();
   const searchParams = useSearchParams();
-  const [view, setView]         = useState<View>("temas");
+  const initialView = (searchParams.get("view") as View) || "temas";
+  const [view, setView]         = useState<View>(initialView);
   const [targetTopicoId, setTargetTopicoId] = useState<string | undefined>(
     searchParams.get("topicoId") ?? undefined
   );
 
-  // Limpa o query param da URL sem recarregar a página (para não persistir após navegação)
+  // Limpa os query params da URL sem recarregar a página (para não persistir após navegação).
+  // `google_drive` é preservado aqui e consumido dentro da IntegracoesView (toast de sucesso).
   useEffect(() => {
-    const tid = searchParams.get("topicoId");
-    if (!tid) return;
+    const tid  = searchParams.get("topicoId");
+    const v    = searchParams.get("view");
+    if (!tid && !v) return;
     const url = new URL(window.location.href);
     url.searchParams.delete("topicoId");
+    url.searchParams.delete("view");
     window.history.replaceState({}, "", url.toString());
   }, [searchParams]);
   const bellRef          = useCallback((p: import("@/hooks/useMetaHub").NotificacaoPayload) => {
@@ -59,10 +64,11 @@ export function DashboardPage() {
   const isAdmin    = user.role === "Admin";
 
   const navLinks: { id: View; label: string; icon: React.ReactNode; visible: boolean }[] = [
-    { id: "temas",    label: "Metas & Tópicos", icon: <Target size={16} />,   visible: canSeeData },
-    { id: "setores",  label: "Setores",         icon: <Building2 size={16} />, visible: isAdmin },
-    { id: "marcos",   label: "Marcos",          icon: <Flag size={16} />,     visible: isAdmin },
-    { id: "usuarios", label: "Usuários",        icon: <Users size={16} />,    visible: isAdmin },
+    { id: "temas",       label: "Metas & Tópicos", icon: <Target size={16} />,    visible: canSeeData },
+    { id: "setores",     label: "Setores",         icon: <Building2 size={16} />, visible: isAdmin },
+    { id: "marcos",      label: "Marcos",          icon: <Flag size={16} />,      visible: isAdmin },
+    { id: "usuarios",    label: "Usuários",        icon: <Users size={16} />,     visible: isAdmin },
+    { id: "integracoes", label: "Integrações",     icon: <Plug size={16} />,      visible: isAdmin },
   ];
 
   return (
@@ -181,10 +187,11 @@ export function DashboardPage() {
           transition={{ duration: 0.25 }}
           className="p-4 md:p-8"
         >
-          {view === "temas"    && <TemasView targetTopicoId={targetTopicoId} />}
-          {view === "setores"  && isAdmin && <SetoresView />}
-          {view === "marcos"   && isAdmin && <MarcosView />}
-          {view === "usuarios" && isAdmin && <UsuariosView />}
+          {view === "temas"       && <TemasView targetTopicoId={targetTopicoId} />}
+          {view === "setores"     && isAdmin && <SetoresView />}
+          {view === "marcos"      && isAdmin && <MarcosView />}
+          {view === "usuarios"    && isAdmin && <UsuariosView />}
+          {view === "integracoes" && isAdmin && <IntegracoesView />}
         </motion.div>
       </main>
       
