@@ -92,7 +92,7 @@ function temaToEtapas(tema: ApiTema, code: string): Etapa[] {
         areas: topico.setorNomes,
         prazo: "—",
         status: mapStatus(meta.status),
-        documento_comprobatorio: meta.documentUrl ? "SIM" : "NÃO",
+        documento_comprobatorio: topico.temDocumentoOficial ? "SIM" : "NÃO",
         drive_link: meta.documentUrl ?? "",
         created_at: meta.createdAt,
       });

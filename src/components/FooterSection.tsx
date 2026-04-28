@@ -32,14 +32,6 @@ export function FooterSection() {
                 height={32}
                 className="object-contain"
               />
-              <div className="w-px h-6 bg-white/20" />
-              <Image
-                src="/brand/tcmrio-logo.png"
-                alt="TCMRio"
-                width={64}
-                height={24}
-                className="object-contain"
-              />
             </div>
 
             {/* Identidade */}

@@ -102,6 +102,7 @@ export interface ApiTopico {
   updatedAt: string;
   metas: ApiMeta[];
   documentosAprovados: DocumentoPublico[];
+  temDocumentoOficial: boolean;
 }
 
 export interface ApiTema {

@@ -90,7 +90,7 @@ export function LoginPage() {
             opacity: [0.3, 0.5, 0.3],
           }}
           transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-          className="absolute -top-[20%] -left-[10%] w-[90vw] h-[90vw] max-w-[900px] max-h-[900px] rounded-full blur-[120px]"
+          className="absolute -top-[20%] -left-[10%] w-[90vw] h-[90vw] max-w-[900px] max-h-[900px] rounded-full will-change-transform"
           style={{ background: "radial-gradient(circle, #2a688f 0%, transparent 60%)" }}
         />
         <motion.div
@@ -100,7 +100,7 @@ export function LoginPage() {
             opacity: [0.2, 0.4, 0.2],
           }}
           transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-          className="absolute top-[30%] right-[0%] w-[70vw] h-[70vw] max-w-[700px] max-h-[700px] rounded-full blur-[140px]"
+          className="absolute top-[30%] right-[0%] w-[70vw] h-[70vw] max-w-[700px] max-h-[700px] rounded-full will-change-transform"
           style={{ background: "radial-gradient(circle, #42b9eb 0%, transparent 60%)" }}
         />
         <motion.div
@@ -110,7 +110,7 @@ export function LoginPage() {
             opacity: [0.2, 0.5, 0.2],
           }}
           transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -bottom-[20%] left-[20%] w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] rounded-full blur-[130px]"
+          className="absolute -bottom-[20%] left-[20%] w-[80vw] h-[80vw] max-w-[800px] max-h-[800px] rounded-full will-change-transform"
           style={{ background: "radial-gradient(circle, #13335a 0%, transparent 70%)" }}
         />
         
