@@ -36,7 +36,10 @@ export default function RootLayout({
   );
 
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    // A classe "dark" é fixa: o sistema não tem tema claro. Ela fica aqui no
+    // HTML servido, e não injetada por JS, para não existir frame claro antes
+    // da hidratação.
+    <html lang="pt-BR" className="dark" suppressHydrationWarning>
       <head>
         <script
           dangerouslySetInnerHTML={{

@@ -52,7 +52,7 @@ function DropdownPanorama() {
   return (
     <div className="grid grid-cols-2 gap-3">
       {stats.map(({ icon: Icon, label, value }) => (
-        <div key={label} className="flex flex-col items-start gap-1 p-2 rounded-xl bg-slate-50 dark:bg-white/5">
+        <div key={label} className="flex flex-col items-start gap-1 p-2 rounded-xl bg-white/5">
           <Icon size={14} className="text-primary" />
           <span className="text-base font-bold text-foreground leading-none">{value}</span>
           <span className="text-[11px] text-muted-foreground leading-tight">{label}</span>
@@ -67,7 +67,7 @@ function DropdownPlanos() {
     <div className="flex flex-col gap-1">
       {planos.slice(0, 5).map((plano) => (
         <a key={plano.id} href="#planos"
-          className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors group">
+          className="flex items-center gap-2.5 px-2 py-1.5 rounded-xl hover:bg-white/5 transition-colors group">
           <span className="inline-flex items-center px-1.5 py-0.5 rounded-md bg-primary/10 text-primary text-[10px] font-bold font-mono shrink-0">
             {plano.code}
           </span>
@@ -76,7 +76,7 @@ function DropdownPlanos() {
           </span>
         </a>
       ))}
-      <div className="mt-1 pt-2 border-t border-slate-200/80 dark:border-white/10">
+      <div className="mt-1 pt-2 border-t border-white/10">
         <a href="#planos" className="text-[11px] text-primary font-medium hover:underline">Ver todos os planos →</a>
       </div>
     </div>
@@ -173,7 +173,7 @@ function DropdownTemas() {
           { icon: Target, label: "Tópicos", desc: "Objetivos por tema" },
           { icon: FileText, label: "Documentos", desc: "Comprobatórios oficiais" },
         ].map(({ icon: Icon, label, desc }) => (
-          <div key={label} className="flex flex-col items-start gap-1 p-2 rounded-xl bg-slate-50 dark:bg-white/5">
+          <div key={label} className="flex flex-col items-start gap-1 p-2 rounded-xl bg-white/5">
             <Icon size={13} className="text-primary" />
             <span className="text-[11px] font-semibold text-foreground leading-none">{label}</span>
             <span className="text-[10px] text-muted-foreground leading-tight">{desc}</span>
@@ -248,7 +248,7 @@ function UserCard() {
     <div ref={ref} className="relative">
       <button
         onClick={() => setOpen((o) => !o)}
-        className="flex items-center gap-2 px-1.5 py-1.5 rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+        className="flex items-center gap-2 px-1.5 py-1.5 rounded-full hover:bg-white/5 transition-all"
       >
         {/* Avatar */}
         <div className="w-10 h-10 rounded-full overflow-hidden ring-1 ring-primary/30 shrink-0">
@@ -273,7 +273,7 @@ function UserCard() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -6, scale: 0.97 }}
             transition={{ duration: 0.16, ease: "easeOut" }}
-            className="absolute top-full right-0 mt-3 w-56 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-2xl shadow-xl p-2 z-50"
+            className="absolute top-full right-0 mt-3 w-56 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl p-2 z-50"
           >
             {/* User info header */}
             <div className="flex items-center gap-2.5 px-2 py-2 mb-1">
@@ -298,13 +298,13 @@ function UserCard() {
 
             {/* Menu items */}
             <Link href="#hero" onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-sm text-foreground">
+              className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-white/5 transition-colors text-sm text-foreground">
               <Home size={14} className="text-muted-foreground shrink-0" />
               Página Inicial
             </Link>
 
             <Link href={user.role === "Pending" ? "/login" : "/dashboard"} onClick={() => setOpen(false)}
-              className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-white/5 transition-colors text-sm text-foreground">
+              className="flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-white/5 transition-colors text-sm text-foreground">
               <LayoutDashboard size={14} className="text-muted-foreground shrink-0" />
               Dashboard
             </Link>
@@ -312,7 +312,7 @@ function UserCard() {
             <div className="h-px bg-border/50 my-1" />
 
             <button onClick={() => { setOpen(false); logout(); }}
-              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-colors text-sm text-rose-500">
+              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-rose-500/10 transition-colors text-sm text-rose-500">
               <LogOut size={14} className="shrink-0" />
               Sair
             </button>
@@ -365,10 +365,10 @@ export function Navbar() {
         initial={{ y: -80, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: "easeOut" }}
-        className={`flex items-center justify-between md:justify-center gap-4 md:gap-6 px-4 md:px-6 py-2 rounded-2xl bg-white/[0.88] dark:bg-slate-900/[0.82] backdrop-blur-xl transition-all duration-300 w-full md:w-fit md:mx-auto ${
+        className={`flex items-center justify-between md:justify-center gap-4 md:gap-6 px-4 md:px-6 py-2 rounded-2xl bg-slate-900/[0.82] backdrop-blur-xl transition-all duration-300 w-full md:w-fit md:mx-auto ${
           scrolled
-            ? "shadow-[0_0_0_1px_rgba(0,0,0,0.05),0_4px_12px_rgba(0,0,0,0.08),0_16px_40px_rgba(0,180,180,0.07)] dark:shadow-[0_0_0_1px_rgba(0,180,180,0.12),0_4px_16px_rgba(0,0,0,0.5),0_20px_60px_rgba(0,180,180,0.10)]"
-            : "shadow-[0_0_0_1px_rgba(0,0,0,0.04),0_2px_8px_rgba(0,0,0,0.06),0_8px_24px_rgba(0,180,180,0.05)] dark:shadow-[0_0_0_1px_rgba(0,180,180,0.08),0_2px_8px_rgba(0,0,0,0.35),0_12px_36px_rgba(0,180,180,0.08)]"
+            ? "shadow-[0_0_0_1px_rgba(0,180,180,0.12),0_4px_16px_rgba(0,0,0,0.5),0_20px_60px_rgba(0,180,180,0.10)]"
+            : "shadow-[0_0_0_1px_rgba(0,180,180,0.08),0_2px_8px_rgba(0,0,0,0.35),0_12px_36px_rgba(0,180,180,0.08)]"
         }`}
       >
         {/* Logos & Hamburger */}
@@ -381,8 +381,8 @@ export function Navbar() {
           </button>
 
           <div className="relative flex items-center">
-            <Image src="/brand/logoazul.png"    alt="Prefeitura Rio Saúde" width={90} height={28} className="block dark:hidden object-contain md:w-[100px] md:h-[32px]" priority />
-            <Image src="/brand/logobranca.png"  alt="Prefeitura Rio Saúde" width={90} height={28} className="hidden dark:block object-contain md:w-[100px] md:h-[32px]" priority />
+            {/* Só a versão branca: o logo azul existia para o fundo do tema claro. */}
+            <Image src="/brand/logobranca.png" alt="Prefeitura Rio Saúde" width={90} height={28} className="object-contain md:w-[100px] md:h-[32px]" priority />
           </div>
         </div>
 
@@ -406,7 +406,7 @@ export function Navbar() {
                     className={`relative flex items-center text-sm font-medium px-3 py-1.5 rounded-full transition-colors ${
                       isActive
                         ? "text-primary"
-                        : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+                        : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                     }`}
                   >
                     {isActive && (
@@ -425,7 +425,7 @@ export function Navbar() {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -6, scale: 0.97 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute top-full left-1/2 -translate-x-1/2 mt-3 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-2xl shadow-xl p-4 min-w-[220px]"
+                        className="absolute top-full left-1/2 -translate-x-1/2 mt-3 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-xl p-4 min-w-[220px]"
                       >
                         {(() => {
                           const Content = dropdownContent[item.id];
@@ -448,7 +448,7 @@ export function Navbar() {
             <UserCard />
           ) : mounted && !user ? (
             <Link href="/login"
-              className="flex text-white items-center text-xs md:text-sm font-medium px-3 md:px-4 py-1.5 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all">
+              className="flex items-center text-xs md:text-sm font-medium px-3 md:px-4 py-1.5 rounded-full bg-primary text-white hover:bg-primary/90 shadow-sm transition-all">
               Login
             </Link>
           ) : null}
@@ -465,7 +465,7 @@ export function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setMobileMenuOpen(false)}
-              className="fixed inset-0 top-0 left-0 bg-black/20 dark:bg-black/40 backdrop-blur-sm z-[-1] md:hidden"
+              className="fixed inset-0 top-0 left-0 bg-black/40 backdrop-blur-sm z-[-1] md:hidden"
             />
 
             {/* Content */}
@@ -474,7 +474,7 @@ export function Navbar() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="absolute top-full left-0 right-0 mt-3 p-4 bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl border border-slate-200/80 dark:border-white/10 rounded-2xl shadow-2xl z-50 md:hidden flex flex-col gap-4 overflow-hidden"
+              className="absolute top-full left-0 right-0 mt-3 p-4 bg-slate-900/95 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl z-50 md:hidden flex flex-col gap-4 overflow-hidden"
             >
               <div className="flex flex-col gap-1">
                 {navItems.map((item) => {
@@ -488,7 +488,7 @@ export function Navbar() {
                       className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
                         isActive
                           ? "bg-primary/10 text-primary font-bold"
-                          : "text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5"
+                          : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                       }`}
                     >
                       <Icon size={18} />
@@ -505,7 +505,7 @@ export function Navbar() {
                     <Link
                       href={user.role === "Pending" ? "/login" : "/dashboard"}
                       onClick={() => setMobileMenuOpen(false)}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-black/5 dark:hover:bg-white/5 transition-all"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all"
                     >
                       <LayoutDashboard size={18} />
                       <span className="text-base font-medium">Dashboard</span>
@@ -515,7 +515,7 @@ export function Navbar() {
                         setMobileMenuOpen(false);
                         logout();
                       }}
-                      className="flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all text-left"
+                      className="flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-500/10 transition-all text-left"
                     >
                       <LogOut size={18} />
                       <span className="text-base font-medium">Sair</span>

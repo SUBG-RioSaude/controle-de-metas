@@ -139,7 +139,7 @@ export function SetorAutocomplete({ value, onChange }: SetorAutocompleteProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 6, scale: 0.98 }}
             transition={{ duration: 0.15 }}
-            className="absolute z-50 mt-1.5 w-full bg-white dark:bg-slate-900 border border-border/50 rounded-xl shadow-xl overflow-hidden max-h-52 overflow-y-auto"
+            className="absolute z-50 mt-1.5 w-full bg-slate-900 border border-border/50 rounded-xl shadow-xl overflow-hidden max-h-52 overflow-y-auto"
           >
             {filtered.length === 0 ? (
               <li className="px-4 py-3 text-sm text-muted-foreground text-center">
@@ -153,7 +153,7 @@ export function SetorAutocomplete({ value, onChange }: SetorAutocompleteProps) {
                     onMouseDown={(e) => { e.preventDefault(); select(s.id); }}
                     onMouseEnter={() => setHighlighted(i)}
                     className={`w-full text-left px-4 py-2.5 text-sm transition-colors ${
-                      i === highlighted ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-slate-50 dark:hover:bg-white/5"
+                      i === highlighted ? "bg-primary/10 text-primary font-medium" : "text-foreground hover:bg-white/5"
                     }`}
                   >
                     {s.nome}

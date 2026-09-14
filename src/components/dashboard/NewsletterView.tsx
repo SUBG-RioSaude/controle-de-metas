@@ -87,13 +87,13 @@ export function NewsletterView() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar inscrito..."
-            className="pl-9 pr-3 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-full sm:w-56"
+            className="pl-9 pr-3 py-2 text-sm rounded-xl bg-slate-900 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-full sm:w-56"
           />
         </div>
       </div>
 
       {/* Send digest card */}
-      <div className="bg-white dark:bg-slate-900 border border-border/50 rounded-2xl p-5 shadow-sm">
+      <div className="bg-slate-900 border border-border/50 rounded-2xl p-5 shadow-sm">
         <div className="flex items-center gap-3 mb-3">
           <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
             <Send size={16} className="text-primary" />
@@ -115,7 +115,7 @@ export function NewsletterView() {
               min={1}
               value={days}
               onChange={(e) => setDays(e.target.value)}
-              className="w-full sm:w-24 px-3 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-border/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full sm:w-24 px-3 py-2.5 text-sm rounded-xl bg-slate-800 border border-border/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
           <button
@@ -147,9 +147,9 @@ export function NewsletterView() {
           </p>
         </div>
       ) : (
-        <div className="bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-sm overflow-hidden">
+        <div className="bg-slate-900 border border-border/50 rounded-2xl shadow-sm overflow-hidden">
           {/* Table header */}
-          <div className="hidden sm:grid grid-cols-[1fr_1fr_auto] px-5 py-3 bg-slate-50 dark:bg-white/[0.02] border-b border-border/40">
+          <div className="hidden sm:grid grid-cols-[1fr_1fr_auto] px-5 py-3 bg-white/[0.02] border-b border-border/40">
             <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide">
               Nome
             </span>
@@ -171,7 +171,7 @@ export function NewsletterView() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0 }}
                   transition={{ duration: 0.15, delay: i * 0.02 }}
-                  className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-1 sm:gap-0 px-5 py-3.5 hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition-colors items-center"
+                  className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-1 sm:gap-0 px-5 py-3.5 hover:bg-white/[0.02] transition-colors items-center"
                 >
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary shrink-0">

@@ -1,7 +1,6 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ThemeProvider } from "next-themes";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,15 +14,14 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <GoogleOAuthProvider clientId={(typeof window !== "undefined" && window.__ENV__?.NEXT_PUBLIC_METAS_GOOGLE_CLIENT_ID) || process.env['NEXT_PUBLIC_METAS_GOOGLE_CLIENT_ID'] || ""}>
       <QueryClientProvider client={queryClient}>
-        <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
-          <TooltipProvider>
-            <AuthProvider>
-              <Toaster />
-              <Sonner />
-              {children}
-            </AuthProvider>
-          </TooltipProvider>
-        </ThemeProvider>
+        {/* Sem ThemeProvider: o tema é fixo em dark, via <html className="dark">. */}
+        <TooltipProvider>
+          <AuthProvider>
+            <Toaster />
+            <Sonner />
+            {children}
+          </AuthProvider>
+        </TooltipProvider>
       </QueryClientProvider>
     </GoogleOAuthProvider>
   );

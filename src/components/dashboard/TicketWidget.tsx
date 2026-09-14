@@ -51,34 +51,34 @@ interface Ticket {
 const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.ReactNode }> = {
   Pendente: {
     label: "Pendente",
-    color: "bg-amber-100 text-amber-700 border-amber-200 dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20",
+    color: "bg-amber-500/10 text-amber-400 border-amber-500/20",
     icon: <Clock size={12} />,
   },
   EmAndamento: {
     label: "Em Andamento",
-    color: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20",
+    color: "bg-blue-500/10 text-blue-400 border-blue-500/20",
     icon: <Activity size={12} />,
   },
   "Em Andamento": {
     label: "Em Andamento",
-    color: "bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-500/10 dark:text-blue-400 dark:border-blue-500/20",
+    color: "bg-blue-500/10 text-blue-400 border-blue-500/20",
     icon: <Activity size={12} />,
   },
   Resolvido: {
     label: "Resolvido",
-    color: "bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-500/10 dark:text-emerald-400 dark:border-emerald-500/20",
+    color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/20",
     icon: <CheckCircle2 size={12} />,
   },
   Cancelado: {
     label: "Cancelado",
-    color: "bg-rose-100 text-rose-700 border-rose-200 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20",
+    color: "bg-rose-500/10 text-rose-400 border-rose-500/20",
     icon: <Ban size={12} />,
   },
 };
 
 const DEFAULT_STATUS = {
   label: "Desconhecido",
-  color: "bg-slate-100 text-slate-700 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700",
+  color: "bg-slate-800 text-slate-400 border-slate-700",
   icon: <AlertCircle size={12} />,
 };
 
@@ -198,7 +198,7 @@ export function TicketWidget() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 15, scale: 0.96 }}
             transition={{ type: "spring", stiffness: 400, damping: 25 }}
-            className="mb-5 w-[380px] max-w-[calc(100vw-32px)] bg-slate-50 dark:bg-slate-950 border border-border/60 rounded-3xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] overflow-hidden flex flex-col h-[600px] max-h-[75vh]"
+            className="mb-5 w-[380px] max-w-[calc(100vw-32px)] bg-slate-950 border border-border/60 rounded-3xl shadow-[0_20px_40px_-15px_rgba(0,0,0,0.15)] overflow-hidden flex flex-col h-[600px] max-h-[75vh]"
           >
             {/* Header */}
             <div className="bg-gradient-to-r from-primary to-primary/80 px-5 py-4 pb-6 flex flex-col relative shrink-0">
@@ -239,7 +239,7 @@ export function TicketWidget() {
             </div>
 
             {/* Content area */}
-            <div className="flex-1 overflow-y-auto relative flex flex-col -mt-4 bg-slate-50 dark:bg-slate-950 rounded-t-3xl shadow-[0_-4px_12px_rgba(0,0,0,0.05)] pt-6 px-4 pb-4">
+            <div className="flex-1 overflow-y-auto relative flex flex-col -mt-4 bg-slate-950 rounded-t-3xl shadow-[0_-4px_12px_rgba(0,0,0,0.05)] pt-6 px-4 pb-4">
               
               {/* ── View: LIST ── */}
               {view === "list" && (
@@ -273,13 +273,13 @@ export function TicketWidget() {
                             animate={{ opacity: 1, y: 0 }}
                             key={t.id}
                             onClick={() => { setSelectedTicket(t); setView("detail"); }}
-                            className="w-full text-left bg-white dark:bg-slate-900/60 p-4 rounded-2xl border border-slate-200/60 dark:border-white/5 hover:border-primary/40 dark:hover:border-primary/40 shadow-sm hover:shadow transition-all group"
+                            className="w-full text-left bg-slate-900/60 p-4 rounded-2xl border border-white/5 hover:border-primary/40 shadow-sm hover:shadow transition-all group"
                           >
                             <div className="flex justify-between items-start gap-3 mb-2">
                               <span className="text-[13px] font-bold text-foreground line-clamp-2 group-hover:text-primary transition-colors leading-snug pr-2">
                                 {t.title}
                               </span>
-                              <span className="text-[11px] font-black text-muted-foreground bg-slate-100 dark:bg-white/5 px-2 py-0.5 rounded-md shrink-0">
+                              <span className="text-[11px] font-black text-muted-foreground bg-white/5 px-2 py-0.5 rounded-md shrink-0">
                                 #{t.ticketNumber}
                               </span>
                             </div>
@@ -318,7 +318,7 @@ export function TicketWidget() {
                         value={title}
                         onChange={e => setTitle(e.target.value)}
                         placeholder="Ex: Erro ao cadastrar meta no setor RH"
-                        className="w-full text-sm font-medium px-4 py-3 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/70 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:bg-white dark:focus:bg-slate-900 text-foreground transition-all shadow-sm"
+                        className="w-full text-sm font-medium px-4 py-3 rounded-2xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:bg-slate-900 text-foreground transition-all shadow-sm"
                       />
                     </div>
                     
@@ -328,7 +328,7 @@ export function TicketWidget() {
                         value={description}
                         onChange={e => setDescription(e.target.value)}
                         placeholder="Detalhe o máximo possível o que está acontecendo. Fique à vontade para copiar as mensagens do sistema..."
-                        className="w-full text-sm leading-relaxed px-4 py-3 rounded-2xl border border-slate-200/80 dark:border-white/10 bg-white/70 dark:bg-white/5 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:bg-white dark:focus:bg-slate-900 text-foreground transition-all resize-none flex-1 shadow-sm"
+                        className="w-full text-sm leading-relaxed px-4 py-3 rounded-2xl border border-white/10 bg-white/5 focus:outline-none focus:ring-2 focus:ring-primary/40 focus:bg-slate-900 text-foreground transition-all resize-none flex-1 shadow-sm"
                       />
                     </div>
                   </div>
@@ -351,10 +351,10 @@ export function TicketWidget() {
               {/* ── View: DETAIL ── */}
               {view === "detail" && selectedTicket && (
                 <div className="flex flex-col gap-5 pb-2">
-                  <div className="bg-white dark:bg-slate-900/60 rounded-2xl p-5 border border-slate-200/60 dark:border-white/5 shadow-sm relative">
+                  <div className="bg-slate-900/60 rounded-2xl p-5 border border-white/5 shadow-sm relative">
                     <div className="mb-4 flex gap-3 justify-between items-start">
                       <h4 className="text-[15px] font-bold text-foreground leading-snug">{selectedTicket.title}</h4>
-                      <span className="text-[10px] h-fit bg-slate-100 dark:bg-white/5 px-2 py-1 rounded-md font-black text-muted-foreground shrink-0">#{selectedTicket.ticketNumber}</span>
+                      <span className="text-[10px] h-fit bg-white/5 px-2 py-1 rounded-md font-black text-muted-foreground shrink-0">#{selectedTicket.ticketNumber}</span>
                     </div>
                     
                     <p className="text-[13px] text-muted-foreground whitespace-pre-wrap leading-relaxed">{selectedTicket.description}</p>
@@ -375,27 +375,27 @@ export function TicketWidget() {
                   </div>
 
                   {selectedTicket.resolutionMessage && (
-                    <div className="bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 rounded-2xl p-5 shadow-sm relative overflow-hidden">
+                    <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-2xl p-5 shadow-sm relative overflow-hidden">
                       <div className="absolute top-0 right-0 p-4 opacity-10 pointer-events-none">
                         <CheckCircle2 size={64} />
                       </div>
-                      <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-widest mb-2">
+                      <span className="flex items-center gap-1.5 text-[11px] font-bold text-emerald-400 uppercase tracking-widest mb-2">
                         <CheckCircle2 size={16} /> Resolução
                       </span>
-                      <p className="text-[13px] text-emerald-800 dark:text-emerald-200 leading-relaxed font-medium relative z-10">{selectedTicket.resolutionMessage}</p>
+                      <p className="text-[13px] text-emerald-200 leading-relaxed font-medium relative z-10">{selectedTicket.resolutionMessage}</p>
                     </div>
                   )}
 
                   {selectedTicket.ticketLogs?.length > 0 && (
                     <div className="mt-2 pl-2 pr-1">
-                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest block mb-4 flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-4 flex items-center gap-2">
                          Histórico de Ações
                       </span>
-                      <div className="flex flex-col gap-5 border-l-2 border-slate-200 dark:border-slate-800 ml-2 pl-5 py-1">
+                      <div className="flex flex-col gap-5 border-l-2 border-slate-800 ml-2 pl-5 py-1">
                         {selectedTicket.ticketLogs.map((log, idx) => (
                           <div key={log.id} className="relative">
-                            <div className={`absolute -left-[27px] top-[7px] w-2.5 h-2.5 rounded-full ring-4 ring-slate-50 dark:ring-slate-950 ${idx === 0 ? 'bg-primary' : 'bg-slate-300 dark:bg-slate-600'}`} />
-                            <div className="bg-white/50 dark:bg-white/[0.02] border border-border/40 rounded-xl p-3 shadow-sm">
+                            <div className={`absolute -left-[27px] top-[7px] w-2.5 h-2.5 rounded-full ring-4 ring-slate-950 ${idx === 0 ? 'bg-primary' : 'bg-slate-600'}`} />
+                            <div className="bg-white/[0.02] border border-border/40 rounded-xl p-3 shadow-sm">
                               <p className="text-xs text-foreground/90 leading-relaxed font-medium">{log.message}</p>
                               <div className="flex items-center gap-2 mt-2 text-[10px] text-muted-foreground font-bold tracking-wide">
                                 <span className="text-primary/80">{log.authorName}</span>
@@ -414,10 +414,10 @@ export function TicketWidget() {
 
             {/* Footer sticky area for LIST */}
             {view === "list" && currentTickets.length > 0 && (
-              <div className="bg-white/80 dark:bg-slate-950/80 backdrop-blur-lg border-t border-border/40 p-3 shrink-0">
+              <div className="bg-slate-950/80 backdrop-blur-lg border-t border-border/40 p-3 shrink-0">
                 <button 
                   onClick={() => setView("create")} 
-                  className="w-full flex items-center justify-center gap-2 bg-slate-900 text-white dark:bg-white dark:text-slate-900 border border-transparent hover:bg-slate-800 dark:hover:bg-slate-200 transition-all shadow shadow-slate-900/10 font-bold text-sm py-3.5 rounded-2xl"
+                  className="w-full flex items-center justify-center gap-2 bg-white text-slate-900 border border-transparent hover:bg-slate-200 transition-all shadow shadow-slate-900/10 font-bold text-sm py-3.5 rounded-2xl"
                 >
                   <Plus size={16} />
                   Abrir Novo Chamado
@@ -437,7 +437,7 @@ export function TicketWidget() {
         transition={{ repeat: !open ? Infinity : 0, duration: 2.5, ease: "easeInOut" }}
         className={`w-[60px] h-[60px] rounded-[24px] flex items-center justify-center shadow-[0_10px_30px_-5px_rgba(0,0,0,0.2)] transition-all relative
           ${open 
-            ? "bg-slate-800 text-white dark:bg-slate-100 dark:text-slate-900 rounded-full" 
+            ? "bg-slate-100 text-slate-900 rounded-full" 
             : "bg-gradient-to-br from-primary to-blue-600 text-white"
           }
         `}

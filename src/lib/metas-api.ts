@@ -5,7 +5,7 @@ function runtimeEnv(key: string): string | undefined {
   return process.env[key];
 }
 
-const getMetasBase = () => {
+export const getMetasBase = () => {
   const base =
     typeof window === "undefined"
       ? runtimeEnv('NEXT_PUBLIC_METAS_API')

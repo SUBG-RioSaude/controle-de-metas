@@ -6,6 +6,15 @@ import { useQuery } from "@tanstack/react-query";
 import * as Accordion from "@radix-ui/react-accordion";
 import { getTemas } from "@/lib/metas-api";
 import {
+  dispararDownload,
+  totalDocumentosDosTemas,
+  totalDocumentosDoTema,
+  urlDownloadDocumento,
+  urlDownloadMeta,
+  urlDownloadTema,
+  urlDownloadTodosTemas,
+} from "@/lib/downloads";
+import {
   type ApiTema,
   type ApiTopico,
   type MetaStatus,
@@ -38,6 +47,7 @@ import {
   Search,
   FileText,
   ArrowDownUp,
+  Download,
 } from "lucide-react";
 
 // ── Utilitários ───────────────────────────────────────────────────────────────
@@ -123,6 +133,44 @@ function MetaStatusBadge({ status }: { status: MetaStatus }) {
       <span className={`w-1.5 h-1.5 rounded-full ${cfg.dot}`} />
       {cfg.label}
     </span>
+  );
+}
+
+// ── BotaoDownload ─────────────────────────────────────────────────────────────
+
+// Nunca renderizar dentro de um Accordion.Trigger: ele já é um <button>, e botão
+// aninhado é HTML inválido. Todos os usos ficam em Content, card ou painel.
+function BotaoDownload({
+  url,
+  label,
+  title,
+  disabled = false,
+  className = "",
+}: {
+  url: string;
+  label?: string;
+  title: string;
+  disabled?: boolean;
+  className?: string;
+}) {
+  return (
+    <button
+      type="button"
+      title={title}
+      aria-label={title}
+      disabled={disabled}
+      onClick={(e) => {
+        // O botão vive dentro de cards/linhas clicáveis — o clique para aqui.
+        e.stopPropagation();
+        dispararDownload(url);
+      }}
+      className={`inline-flex items-center gap-1.5 rounded-lg border text-[10px] font-medium transition-all shrink-0 border-white/[0.14] text-white/70 hover:text-[#42b9eb] hover:border-[#42b9eb]/40 hover:bg-[#42b9eb]/[0.08] disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:text-white/70 disabled:hover:border-white/[0.14] disabled:hover:bg-transparent ${
+        label ? "px-2.5 py-1" : "p-1.5"
+      } ${className}`}
+    >
+      <Download className="w-3 h-3 shrink-0" />
+      {label}
+    </button>
   );
 }
 
@@ -239,17 +287,24 @@ function TopicoAccordionItem({
           {/* Documentos aprovados */}
           {topico.documentosAprovados?.length > 0 && (
             <div className="border-t border-white/[0.06] pt-3">
-              <p className="text-[10px] font-bold uppercase tracking-widest text-white/25 flex items-center gap-1.5 mb-2">
-                <FileText className="w-3 h-3" />Documentos Oficiais
-              </p>
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-white/25 flex items-center gap-1.5">
+                  <FileText className="w-3 h-3" />Documentos Oficiais
+                </p>
+                <BotaoDownload
+                  url={urlDownloadMeta(topico.id)}
+                  label="Baixar ZIP"
+                  title={`Baixar os ${topico.documentosAprovados.length} documentos desta meta em ZIP`}
+                />
+              </div>
               <ul className="space-y-1.5">
                 {topico.documentosAprovados.map((doc) => (
-                  <li key={doc.id}>
+                  <li key={doc.id} className="flex items-center gap-2">
                     <a
                       href={doc.driveOficialUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-[11px] text-[#42b9eb]/70 hover:text-[#42b9eb] transition-colors group"
+                      className="inline-flex items-center gap-2 min-w-0 text-[11px] text-[#42b9eb]/70 hover:text-[#42b9eb] transition-colors group"
                     >
                       <FileText className="w-3 h-3 shrink-0" />
                       <span className="underline underline-offset-2 decoration-[#42b9eb]/30 group-hover:decoration-[#42b9eb] truncate max-w-[280px]">
@@ -257,6 +312,10 @@ function TopicoAccordionItem({
                       </span>
                       <ExternalLink className="w-2.5 h-2.5 shrink-0 opacity-50 group-hover:opacity-100" />
                     </a>
+                    <BotaoDownload
+                      url={urlDownloadDocumento(doc.id)}
+                      title={`Baixar ${doc.nome}`}
+                    />
                   </li>
                 ))}
               </ul>
@@ -404,6 +463,7 @@ function TemaCard({
   const total = todasMetas.length;
   const concluidas = todasMetas.filter((m) => isCompletedMetaStatus(m.status)).length;
   const pct = total > 0 ? Math.round((concluidas / total) * 100) : 0;
+  const totalDocs = totalDocumentosDoTema(tema);
 
   return (
     <motion.div
@@ -463,18 +523,29 @@ function TemaCard({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-between mt-auto pt-3 border-t border-white/[0.10]">
-          <button
-            onClick={(e) => { e.stopPropagation(); onOpenSheet(); }}
-            className={`flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1 rounded-lg border transition-all ${
-              selected
-                ? "border-[#42b9eb]/35 text-[#42b9eb] hover:border-[#42b9eb]/60 hover:bg-[#42b9eb]/[0.08]"
-                : "border-white/30 text-white/75 hover:text-white hover:border-white/55 hover:bg-white/[0.06]"
-            }`}
-          >
-            <Layers className="w-3 h-3" />
-            Ver tópicos
-          </button>
+        <div className="flex items-center justify-between gap-2 mt-auto pt-3 border-t border-white/[0.10]">
+          <div className="flex items-center gap-1.5 min-w-0">
+            <button
+              onClick={(e) => { e.stopPropagation(); onOpenSheet(); }}
+              className={`flex items-center gap-1.5 text-[10px] font-medium px-2.5 py-1 rounded-lg border transition-all ${
+                selected
+                  ? "border-[#42b9eb]/35 text-[#42b9eb] hover:border-[#42b9eb]/60 hover:bg-[#42b9eb]/[0.08]"
+                  : "border-white/30 text-white/75 hover:text-white hover:border-white/55 hover:bg-white/[0.06]"
+              }`}
+            >
+              <Layers className="w-3 h-3" />
+              Ver tópicos
+            </button>
+            <BotaoDownload
+              url={urlDownloadTema(tema.id)}
+              disabled={totalDocs === 0}
+              title={
+                totalDocs === 0
+                  ? "Este tema ainda não possui documentos oficiais"
+                  : `Baixar os ${totalDocs} documentos deste tema em ZIP`
+              }
+            />
+          </div>
 
           <span
             className={`flex items-center gap-1.5 text-[10px] font-medium transition-colors ${
@@ -492,7 +563,13 @@ function TemaCard({
 
 // ── DocumentosAnexados — busca, ordenação e filtro por período/tipo ──────────
 
-function DocumentosAnexados({ documentos }: { documentos: DocumentoPublico[] }) {
+function DocumentosAnexados({
+  documentos,
+  topicoId,
+}: {
+  documentos: DocumentoPublico[];
+  topicoId: string;
+}) {
   const [query, setQuery] = useState("");
   const [order, setOrder] = useState<"desc" | "asc">("desc");
   const [period, setPeriod] = useState<"all" | "30d" | "ano">("all");
@@ -564,21 +641,32 @@ function DocumentosAnexados({ documentos }: { documentos: DocumentoPublico[] }) 
         )}
       </div>
 
-      <p className="text-[10px] text-white/25">
-        {filtered.length} de {documentos.length} documentos
-      </p>
+      <div className="flex items-center justify-between gap-2">
+        <p className="text-[10px] text-white/25">
+          {filtered.length} de {documentos.length} documentos
+        </p>
+        {/* O ZIP leva a meta inteira — os filtros acima só afetam a lista exibida. */}
+        <BotaoDownload
+          url={urlDownloadMeta(topicoId)}
+          label={`Baixar ${documentos.length} em ZIP`}
+          title={`Baixar todos os ${documentos.length} documentos desta meta em ZIP (os filtros acima não se aplicam)`}
+        />
+      </div>
 
       {filtered.length === 0 ? (
         <p className="text-xs text-white/25 italic">Nenhum documento encontrado com esses filtros.</p>
       ) : (
         <ul className="space-y-1.5 max-h-[220px] overflow-y-auto pr-1">
           {filtered.map((doc) => (
-            <li key={doc.id}>
+            <li
+              key={doc.id}
+              className="flex items-center gap-1 rounded-lg pr-1.5 hover:bg-white/[0.03] transition-colors"
+            >
               <a
                 href={doc.driveOficialUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-[11px] text-[#42b9eb]/70 hover:text-[#42b9eb] transition-colors group rounded-lg px-2 py-1.5 hover:bg-white/[0.03]"
+                className="flex flex-1 min-w-0 items-center gap-2 text-[11px] text-[#42b9eb]/70 hover:text-[#42b9eb] transition-colors group px-2 py-1.5"
               >
                 <FileText className="w-3 h-3 shrink-0" />
                 <span className="flex-1 min-w-0 truncate underline underline-offset-2 decoration-[#42b9eb]/30 group-hover:decoration-[#42b9eb]">
@@ -592,6 +680,10 @@ function DocumentosAnexados({ documentos }: { documentos: DocumentoPublico[] }) 
                 </span>
                 <ExternalLink className="w-2.5 h-2.5 shrink-0 opacity-50 group-hover:opacity-100" />
               </a>
+              <BotaoDownload
+                url={urlDownloadDocumento(doc.id)}
+                title={`Baixar ${doc.nome}`}
+              />
             </li>
           ))}
         </ul>
@@ -739,7 +831,10 @@ function MetaTopicoAccordion({
               </Accordion.Trigger>
               <Accordion.Content className="overflow-hidden data-[state=open]:animate-accordion-down data-[state=closed]:animate-accordion-up">
                 <div className="px-3 pb-3 pt-1">
-                  <DocumentosAnexados documentos={topico.documentosAprovados} />
+                  <DocumentosAnexados
+                    documentos={topico.documentosAprovados}
+                    topicoId={topico.id}
+                  />
                 </div>
               </Accordion.Content>
             </Accordion.Item>
@@ -816,6 +911,11 @@ export function PlanosSection() {
     () => (temas ?? []).reduce((acc, t) => acc + t.topicos.reduce((a, tp) => a + tp.metas.length, 0), 0),
     [temas]
   );
+  const totalDocs = useMemo(() => totalDocumentosDosTemas(temas ?? []), [temas]);
+  const totalDocsDoTema = useMemo(
+    () => (selectedTema ? totalDocumentosDoTema(selectedTema) : 0),
+    [selectedTema]
+  );
 
   return (
     <section id="planos" className="py-32 relative">
@@ -853,23 +953,38 @@ export function PlanosSection() {
 
         {!isLoading && !isError && temas && (
           <>
-            {/* Stats chips */}
-            <div className="flex flex-wrap gap-2 mb-8">
-              {[
-                `${temas.length} ${temas.length === 1 ? "tema" : "temas"}`,
-                `${totalTopicos} ${totalTopicos === 1 ? "meta" : "metas"}`,
-                `${totalMetas} ${totalMetas === 1 ? "objetivo" : "objetivos"}`,
-              ].map((label, i) => (
-                <motion.span
-                  key={label}
-                  initial={{ opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: i * 0.05 }}
-                  className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white/[0.05] border border-white/[0.08] text-white/50"
-                >
-                  {label}
-                </motion.span>
-              ))}
+            {/* Stats chips + download geral */}
+            <div className="flex flex-wrap items-center justify-between gap-3 mb-8">
+              <div className="flex flex-wrap gap-2">
+                {[
+                  `${temas.length} ${temas.length === 1 ? "tema" : "temas"}`,
+                  `${totalTopicos} ${totalTopicos === 1 ? "meta" : "metas"}`,
+                  `${totalMetas} ${totalMetas === 1 ? "objetivo" : "objetivos"}`,
+                  `${totalDocs} ${totalDocs === 1 ? "documento" : "documentos"}`,
+                ].map((label, i) => (
+                  <motion.span
+                    key={label}
+                    initial={{ opacity: 0, y: 6 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.05 }}
+                    className="inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium bg-white/[0.05] border border-white/[0.08] text-white/50"
+                  >
+                    {label}
+                  </motion.span>
+                ))}
+              </div>
+
+              <BotaoDownload
+                url={urlDownloadTodosTemas()}
+                label="Baixar todos os temas (ZIP)"
+                disabled={totalDocs === 0}
+                title={
+                  totalDocs === 0
+                    ? "Ainda não há documentos oficiais publicados"
+                    : `Baixar os ${totalDocs} documentos oficiais de todos os temas em um único ZIP`
+                }
+                className="text-[11px] px-3 py-1.5"
+              />
             </div>
 
             {/* Grid de cards */}
@@ -914,15 +1029,29 @@ export function PlanosSection() {
                           {selectedTema.topicos[0]?.descricao ?? "—"}
                         </p>
                       </div>
-                      <div className="shrink-0 text-right">
-                        <div className="flex items-baseline gap-1 justify-end">
-                          <AnimatedCounter value={completed} className="text-3xl text-primary" />
-                          <span className="text-muted-foreground text-lg">/</span>
-                          <AnimatedCounter value={todasMetasDoTema.length} className="text-3xl text-foreground" />
+                      <div className="shrink-0 flex items-center gap-5">
+                        <div className="text-right">
+                          <div className="flex items-baseline gap-1 justify-end">
+                            <AnimatedCounter value={completed} className="text-3xl text-primary" />
+                            <span className="text-muted-foreground text-lg">/</span>
+                            <AnimatedCounter value={todasMetasDoTema.length} className="text-3xl text-foreground" />
+                          </div>
+                          <span className="text-xs text-muted-foreground">
+                            objetivos &bull; {mounted ? `${pct}%` : "--%"} concluído
+                          </span>
                         </div>
-                        <span className="text-xs text-muted-foreground">
-                          objetivos &bull; {mounted ? `${pct}%` : "--%"} concluído
-                        </span>
+
+                        <BotaoDownload
+                          url={urlDownloadTema(selectedTema.id)}
+                          label="Baixar tema (ZIP)"
+                          disabled={totalDocsDoTema === 0}
+                          title={
+                            totalDocsDoTema === 0
+                              ? "Este tema ainda não possui documentos oficiais"
+                              : `Baixar os ${totalDocsDoTema} documentos oficiais deste tema em ZIP`
+                          }
+                          className="text-[11px] px-3 py-1.5"
+                        />
                       </div>
                     </div>
                   </div>

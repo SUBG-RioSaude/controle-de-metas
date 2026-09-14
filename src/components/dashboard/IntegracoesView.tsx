@@ -135,7 +135,7 @@ export function IntegracoesView() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2 }}
-        className="bg-white dark:bg-slate-900 border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col gap-5"
+        className="bg-slate-900 border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col gap-5"
       >
         {loading ? (
           <div className="flex items-center justify-center h-48">
@@ -180,7 +180,7 @@ export function IntegracoesView() {
             )}
 
             {!s?.configured && (
-              <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-dashed border-border/50 p-4 text-sm text-muted-foreground">
+              <div className="rounded-xl bg-slate-800/40 border border-dashed border-border/50 p-4 text-sm text-muted-foreground">
                 Nenhum refresh token registrado. Clique em <b>Reautorizar Google Drive</b> para conceder acesso.
               </div>
             )}
@@ -197,7 +197,7 @@ export function IntegracoesView() {
               </button>
               <button
                 onClick={fetchStatus}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border border-border/50 text-muted-foreground hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-medium border border-border/50 text-muted-foreground hover:bg-white/5 transition-colors"
               >
                 <RefreshCw size={14} />
                 Atualizar status
@@ -218,7 +218,7 @@ export function IntegracoesView() {
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.2, delay: 0.05 }}
-        className="bg-white dark:bg-slate-900 border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col gap-5"
+        className="bg-slate-900 border border-border/50 rounded-2xl p-6 shadow-sm flex flex-col gap-5"
       >
         <div className="flex items-start gap-4">
           <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -237,7 +237,7 @@ export function IntegracoesView() {
                   </span>
                   <button
                     onClick={fetchSubStatus}
-                    className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full border border-border/50 text-muted-foreground hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+                    className="inline-flex items-center gap-1.5 text-[11px] font-medium px-2 py-0.5 rounded-full border border-border/50 text-muted-foreground hover:bg-white/5 transition-colors"
                   >
                     <RefreshCw size={11} />
                     Atualizar status
@@ -266,7 +266,7 @@ export function IntegracoesView() {
           </div>
         ) : (
           <>
-            <div className="flex items-center justify-between rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-border/40 p-4">
+            <div className="flex items-center justify-between rounded-xl bg-slate-800/40 border border-border/40 p-4">
               <div>
                 <p className="text-sm font-semibold text-foreground">Pausar envios de documentos</p>
                 {subStatus?.updatedByUserName && (
@@ -304,7 +304,7 @@ function InfoRow({
   }[tone];
 
   return (
-    <div className="rounded-xl bg-slate-50 dark:bg-slate-800/40 border border-border/40 p-3">
+    <div className="rounded-xl bg-slate-800/40 border border-border/40 p-3">
       <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wide">{label}</p>
       <p className={`text-sm font-semibold mt-1 ${toneColor}`}>{value}</p>
     </div>

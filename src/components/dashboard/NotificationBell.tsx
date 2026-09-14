@@ -150,7 +150,7 @@ export function NotificationBell({ onNavigate }: NotificationBellProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-0 top-full mt-2 w-[360px] max-h-[520px] flex flex-col bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-2xl z-[200] overflow-hidden"
+            className="absolute right-0 top-full mt-2 w-[360px] max-h-[520px] flex flex-col bg-slate-900 border border-border/50 rounded-2xl shadow-2xl z-[200] overflow-hidden"
           >
             {/* Header */}
             <div className="flex items-center justify-between px-4 py-3 border-b border-border/50 shrink-0">
@@ -167,7 +167,7 @@ export function NotificationBell({ onNavigate }: NotificationBellProps) {
                 {naoLidas > 0 && (
                   <button
                     onClick={marcarTodasLidas}
-                    className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"
+                    className="p-1.5 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"
                     title="Marcar todas como lidas"
                   >
                     <CheckCheck className="w-4 h-4" />
@@ -175,7 +175,7 @@ export function NotificationBell({ onNavigate }: NotificationBellProps) {
                 )}
                 <button
                   onClick={() => setOpen(false)}
-                  className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"
+                  className="p-1.5 rounded-lg hover:bg-white/5 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -201,7 +201,7 @@ export function NotificationBell({ onNavigate }: NotificationBellProps) {
                       key={n.id}
                       className={`flex gap-3 px-4 py-3 border-b border-border/30 last:border-0 group transition-colors ${
                         !n.lida ? "bg-primary/[0.03]" : ""
-                      } hover:bg-slate-50 dark:hover:bg-white/[0.03]`}
+                      } hover:bg-white/[0.03]`}
                     >
                       {/* Ícone */}
                       <div className="mt-0.5 shrink-0">
@@ -229,7 +229,7 @@ export function NotificationBell({ onNavigate }: NotificationBellProps) {
                         {!n.lida && (
                           <button
                             onClick={() => marcarLida(n.id)}
-                            className="p-1 rounded-md hover:bg-slate-200 dark:hover:bg-white/10 text-muted-foreground hover:text-primary transition-colors"
+                            className="p-1 rounded-md hover:bg-white/10 text-muted-foreground hover:text-primary transition-colors"
                             title="Marcar como lida"
                           >
                             <Check className="w-3 h-3" />
@@ -237,7 +237,7 @@ export function NotificationBell({ onNavigate }: NotificationBellProps) {
                         )}
                         <button
                           onClick={() => excluir(n.id, n.lida)}
-                          className="p-1 rounded-md hover:bg-rose-100 dark:hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-colors"
+                          className="p-1 rounded-md hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-colors"
                           title="Excluir"
                         >
                           <Trash2 className="w-3 h-3" />

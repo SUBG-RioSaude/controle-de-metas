@@ -85,11 +85,11 @@ interface Tema {
 // ── Status config ─────────────────────────────────────────────────────────────
 
 const STATUS_CONFIG: Record<MetaStatus, { label: string; color: string; icon: React.ReactNode }> = {
-  NaoIniciada:        { label: "Não iniciada",       color: "bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700",        icon: <AlertCircle size={11} /> },
-  EmAndamento:        { label: "Em andamento",        color: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-400/10 dark:text-amber-400 dark:border-amber-400/20",  icon: <Clock size={11} /> },
-  PendenteAprovacao:  { label: "Aguardando aprovação",color: "bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-400/10 dark:text-violet-400 dark:border-violet-400/20", icon: <ChevronRight size={11} /> },
-  Concluido:          { label: "Concluída",           color: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-400/10 dark:text-emerald-400 dark:border-emerald-400/20", icon: <CheckCircle2 size={11} /> },
-  AguardandoRetorno:  { label: "Aguardando retorno",  color: "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-400/10 dark:text-rose-400 dark:border-rose-400/20",        icon: <RotateCcw size={11} /> },
+  NaoIniciada:        { label: "Não iniciada",       color: "bg-slate-800 text-slate-400 border-slate-700",        icon: <AlertCircle size={11} /> },
+  EmAndamento:        { label: "Em andamento",        color: "bg-amber-400/10 text-amber-400 border-amber-400/20",  icon: <Clock size={11} /> },
+  PendenteAprovacao:  { label: "Aguardando aprovação",color: "bg-violet-400/10 text-violet-400 border-violet-400/20", icon: <ChevronRight size={11} /> },
+  Concluido:          { label: "Concluída",           color: "bg-emerald-400/10 text-emerald-400 border-emerald-400/20", icon: <CheckCircle2 size={11} /> },
+  AguardandoRetorno:  { label: "Aguardando retorno",  color: "bg-rose-400/10 text-rose-400 border-rose-400/20",        icon: <RotateCcw size={11} /> },
 };
 
 // Analyst can set these; Aprovador adds Concluido / AguardandoRetorno
@@ -195,7 +195,7 @@ function MetaCard({ meta, liveStatus, liveLog }: { meta: Meta; liveStatus?: Meta
   }
 
   return (
-    <div className="rounded-xl bg-slate-50 dark:bg-white/[0.03] border border-border/40 hover:border-primary/20 transition-colors">
+    <div className="rounded-xl bg-white/[0.03] border border-border/40 hover:border-primary/20 transition-colors">
       <div className="flex items-start gap-3 p-3">
         <Target size={14} className="text-primary mt-0.5 shrink-0" />
         <div className="flex-1 min-w-0">
@@ -218,7 +218,7 @@ function MetaCard({ meta, liveStatus, liveLog }: { meta: Meta; liveStatus?: Meta
               <button
                 onClick={handleToggleLogs}
                 className={`ml-auto inline-flex items-center gap-1 text-[10px] font-medium px-2 py-0.5 rounded-lg border transition-colors ${
-                  logsOpen ? "bg-primary/10 text-primary border-primary/20" : "text-muted-foreground border-border/40 hover:bg-slate-100 dark:hover:bg-white/5"
+                  logsOpen ? "bg-primary/10 text-primary border-primary/20" : "text-muted-foreground border-border/40 hover:bg-white/5"
                 }`}
               >
                 {logsLoading ? <Loader2 size={9} className="animate-spin" /> : <History size={9} />}
@@ -333,7 +333,7 @@ function StatusSelector({ current, available, onSelect, loading }: StatusSelecto
               initial={{ opacity: 0, y: 8, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 8, scale: 0.95 }}
-              className="absolute left-0 top-full mt-2 w-48 bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-2xl z-[100] py-1.5 overflow-hidden"
+              className="absolute left-0 top-full mt-2 w-48 bg-slate-900 border border-border/50 rounded-2xl shadow-2xl z-[100] py-1.5 overflow-hidden"
             >
               {[...available].map((s) => {
                 const isSelected = current === s;
@@ -345,7 +345,7 @@ function StatusSelector({ current, available, onSelect, loading }: StatusSelecto
                       onSelect(s);
                       setOpen(false);
                     }}
-                    className={`w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${
+                    className={`w-full flex items-center justify-between px-3 py-2 text-[11px] font-semibold transition-colors hover:bg-white/5 ${
                       isSelected ? "text-primary bg-primary/5" : "text-foreground"
                     }`}
                   >
@@ -681,10 +681,10 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
   }
 
   const DOC_STATUS: Record<DocumentoStatus, { label: string; color: string }> = {
-    PendenteAprovacao:           { label: "Aguardando aprovação",       color: "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-400/10 dark:text-amber-400 dark:border-amber-400/20" },
-    PendenteConfirmacaoAnalista: { label: "Aguardando confirmação",     color: "bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-400/10 dark:text-violet-400 dark:border-violet-400/20" },
-    Aprovado:                    { label: "Aprovado",                   color: "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-400/10 dark:text-emerald-400 dark:border-emerald-400/20" },
-    Devolvido:                   { label: "Devolvido",                  color: "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-400/10 dark:text-rose-400 dark:border-rose-400/20" },
+    PendenteAprovacao:           { label: "Aguardando aprovação",       color: "bg-amber-400/10 text-amber-400 border-amber-400/20" },
+    PendenteConfirmacaoAnalista: { label: "Aguardando confirmação",     color: "bg-violet-400/10 text-violet-400 border-violet-400/20" },
+    Aprovado:                    { label: "Aprovado",                   color: "bg-emerald-400/10 text-emerald-400 border-emerald-400/20" },
+    Devolvido:                   { label: "Devolvido",                  color: "bg-rose-400/10 text-rose-400 border-rose-400/20" },
   };
 
   return (
@@ -697,7 +697,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
             <p className="text-sm text-foreground">
               Confirme os dados do documento que será enviado:
             </p>
-            <div className="bg-slate-50 dark:bg-slate-900/50 border border-border/50 rounded-lg p-3 space-y-2">
+            <div className="bg-slate-900/50 border border-border/50 rounded-lg p-3 space-y-2">
               <div>
                 <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">Arquivo</span>
                 <p className="text-xs font-semibold text-foreground break-all line-clamp-2 mt-0.5" title={draggedFile?.name}>
@@ -793,9 +793,9 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                   disabled={!canMove}
                   className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all ${
                     approvalMode === "move"
-                      ? "border-emerald-500 bg-emerald-50 dark:bg-emerald-500/10"
+                      ? "border-emerald-500 bg-emerald-500/10"
                       : canMove
-                        ? "border-border/50 hover:border-emerald-300 hover:bg-emerald-50/50 dark:hover:bg-emerald-500/5"
+                        ? "border-border/50 hover:border-emerald-300 hover:bg-emerald-500/5"
                         : "border-border/30 opacity-40 cursor-not-allowed"
                   }`}
                 >
@@ -892,7 +892,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
         {isDragging && (
           <div className="absolute inset-0 z-50 bg-primary/5 backdrop-blur-[2px] flex items-center justify-center pointer-events-none">
             {expanded ? (
-              <div className="bg-white dark:bg-slate-900 border-2 border-dashed border-primary p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-3">
+              <div className="bg-slate-900 border-2 border-dashed border-primary p-6 rounded-2xl shadow-2xl flex flex-col items-center gap-3">
                  <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center animate-bounce">
                    <Upload size={24} className="text-primary" />
                  </div>
@@ -902,7 +902,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                  </div>
               </div>
             ) : (
-              <div className="bg-white dark:bg-slate-900 border-2 border-dashed border-primary px-5 py-3 rounded-xl shadow-2xl flex items-center gap-4 w-[min(90%,400px)]">
+              <div className="bg-slate-900 border-2 border-dashed border-primary px-5 py-3 rounded-xl shadow-2xl flex items-center gap-4 w-[min(90%,400px)]">
                  <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center animate-bounce shrink-0">
                    <Upload size={18} className="text-primary" />
                  </div>
@@ -919,7 +919,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
           tabIndex={0}
           onClick={() => setExpanded((e) => !e)}
           onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setExpanded((ex) => !ex); }}
-          className="w-full flex flex-col sm:flex-row sm:items-center gap-2 md:gap-3 px-3 md:px-4 py-3 hover:bg-slate-50 dark:hover:bg-white/[0.03] transition-colors text-left cursor-pointer"
+          className="w-full flex flex-col sm:flex-row sm:items-center gap-2 md:gap-3 px-3 md:px-4 py-3 hover:bg-white/[0.03] transition-colors text-left cursor-pointer"
         >
           <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
             <motion.div animate={{ rotate: expanded ? 90 : 0 }} transition={{ duration: 0.2 }} className="mt-0.5 sm:mt-0 shrink-0">
@@ -996,7 +996,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                 )}
 
                 {/* ── Documentos ──────────────────────────────────────────── */}
-                <div className="mt-4 bg-slate-50/50 dark:bg-white/[0.01] rounded-xl border border-border/40 p-3">
+                <div className="mt-4 bg-white/[0.01] rounded-xl border border-border/40 p-3">
                   <div className="flex items-center justify-between mb-3 pl-1">
                     <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-1.5">
                       <Paperclip size={12} />Documentos Anexados
@@ -1006,7 +1006,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                         <input ref={fileInputRef} type="file" accept=".doc,.docx,.pdf" className="hidden" onChange={handleFileChange} />
                         <Button
                           size="sm" variant="ghost"
-                          className="h-7 text-[10px] gap-1.5 px-3 bg-white dark:bg-slate-900 border border-border/50 hover:bg-slate-100 dark:hover:bg-white/5 shadow-sm rounded-lg"
+                          className="h-7 text-[10px] gap-1.5 px-3 bg-slate-900 border border-border/50 hover:bg-white/5 shadow-sm rounded-lg"
                           disabled={isUploading}
                           onClick={() => fileInputRef.current?.click()}
                         >
@@ -1027,8 +1027,8 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                       <span className="text-xs font-medium">Buscando documentos...</span>
                     </div>
                   ) : documents.length === 0 && !isUploading ? (
-                    <div className="flex flex-col items-center justify-center py-6 border border-dashed border-border/60 rounded-xl bg-white/50 dark:bg-slate-950/20">
-                      <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center mb-2">
+                    <div className="flex flex-col items-center justify-center py-6 border border-dashed border-border/60 rounded-xl bg-slate-950/20">
+                      <div className="w-8 h-8 rounded-full bg-slate-800 flex items-center justify-center mb-2">
                         <Paperclip size={14} className="text-muted-foreground/60" />
                       </div>
                       <p className="text-[11px] text-muted-foreground font-medium">Nenhum documento anexado a esta etapa.</p>
@@ -1036,7 +1036,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                   ) : (
                     <div className="flex flex-col gap-2">
                       {isUploading && (
-                        <div className="rounded-xl bg-slate-50 dark:bg-slate-900/50 border border-dashed border-primary/40 p-3 flex items-center gap-3 animate-pulse">
+                        <div className="rounded-xl bg-slate-900/50 border border-dashed border-primary/40 p-3 flex items-center gap-3 animate-pulse">
                           <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
                              <Loader2 size={14} className="text-primary animate-spin" />
                           </div>
@@ -1049,7 +1049,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                       {documents.map((doc) => {
                         const st = DOC_STATUS[doc.status];
                         return (
-                          <div key={doc.id} className="rounded-xl bg-white dark:bg-slate-950 border border-border/50 p-3 flex flex-col gap-2">
+                          <div key={doc.id} className="rounded-xl bg-slate-950 border border-border/50 p-3 flex flex-col gap-2">
                             {/* Row 1: icon + name + status badge */}
                             <div className="flex items-start sm:items-center gap-3">
                               <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
@@ -1076,9 +1076,9 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
 
                             {/* Row 2: rejection comment */}
                             {doc.status === "Devolvido" && doc.comentarioAprovacao && (
-                              <div className="ml-11 px-3 py-2 rounded-lg bg-rose-50 dark:bg-rose-500/10 border border-rose-200 dark:border-rose-500/20">
-                                <p className="text-[11px] text-rose-700 dark:text-rose-400 font-medium">Motivo da devolução:</p>
-                                <p className="text-[11px] text-rose-600 dark:text-rose-300 mt-0.5">{doc.comentarioAprovacao}</p>
+                              <div className="ml-11 px-3 py-2 rounded-lg bg-rose-500/10 border border-rose-500/20">
+                                <p className="text-[11px] text-rose-400 font-medium">Motivo da devolução:</p>
+                                <p className="text-[11px] text-rose-300 mt-0.5">{doc.comentarioAprovacao}</p>
                               </div>
                             )}
 
@@ -1087,7 +1087,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                               <div className="ml-11">
                                 <a
                                   href={doc.driveOficialUrl} target="_blank" rel="noopener noreferrer"
-                                  className="inline-flex items-center gap-1 text-[10px] text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
+                                  className="inline-flex items-center gap-1 text-[10px] text-emerald-400 hover:underline font-medium"
                                 >
                                   <ExternalLink size={10} />Ver no Drive oficial
                                 </a>
@@ -1096,12 +1096,12 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
 
                             {/* Row 3b: info aguardando confirmação */}
                             {doc.status === "PendenteConfirmacaoAnalista" && (
-                              <div className="ml-11 px-3 py-2 rounded-lg bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/20 space-y-1">
-                                <p className="text-[11px] text-violet-700 dark:text-violet-400 font-medium">
+                              <div className="ml-11 px-3 py-2 rounded-lg bg-violet-500/10 border border-violet-500/20 space-y-1">
+                                <p className="text-[11px] text-violet-400 font-medium">
                                   Revisado pelo aprovador — aguardando sua confirmação da versão final.
                                 </p>
                                 {doc.comentarioAprovacao && (
-                                  <p className="text-[11px] text-violet-600 dark:text-violet-300">
+                                  <p className="text-[11px] text-violet-300">
                                     <span className="font-semibold">Mensagem:</span> {doc.comentarioAprovacao}
                                   </p>
                                 )}
@@ -1136,7 +1136,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                                   <button
                                     onClick={() => setReturnDocId(doc.id)}
                                     disabled={approvingId === doc.id || isReturning || reuploadingId !== null || deletingId !== null}
-                                    className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 border border-rose-200 hover:bg-rose-100 dark:bg-rose-500/10 dark:text-rose-400 dark:border-rose-500/20 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg border hover:bg-rose-100 bg-rose-500/10 text-rose-400 border-rose-500/20 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                   >
                                     <ThumbsDown size={12} />Devolver
                                   </button>
@@ -1160,7 +1160,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                                 <button
                                   onClick={() => handleDelete(doc.id)}
                                   disabled={deletingId === doc.id || reuploadingId !== null || approvingId !== null || isReturning}
-                                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 border border-slate-200 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-lg border hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 bg-slate-800 text-slate-300 border-slate-700 shadow-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                   {deletingId === doc.id ? <Loader2 size={12} className="animate-spin" /> : <Trash2 size={12} />}
                                   Excluir
@@ -1173,7 +1173,7 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                                 className={`ml-auto inline-flex items-center gap-1 text-[10px] font-medium px-2 py-1 rounded-lg border transition-colors ${
                                   logsOpenId === doc.id
                                     ? "bg-primary/10 text-primary border-primary/20"
-                                    : "bg-transparent text-muted-foreground border-border/40 hover:bg-slate-50 dark:hover:bg-white/5"
+                                    : "bg-transparent text-muted-foreground border-border/40 hover:bg-white/5"
                                 }`}
                               >
                                 {logsLoadingId === doc.id
@@ -1206,9 +1206,9 @@ function TopicoCard({ topico, onAddMeta, onTopicUpdated, liveStatuses, documents
                                       (docLogs.get(doc.id) ?? []).map((log) => {
                                         const ACAO_CONFIG: Record<DocumentoAcao, { label: string; color: string }> = {
                                           Upload:   { label: "Upload",   color: "text-primary" },
-                                          Aprovado: { label: "Aprovado", color: "text-emerald-600 dark:text-emerald-400" },
-                                          Devolvido:{ label: "Devolvido",color: "text-rose-600 dark:text-rose-400" },
-                                          Reenvio:  { label: "Reenvio",  color: "text-amber-600 dark:text-amber-400" },
+                                          Aprovado: { label: "Aprovado", color: "text-emerald-400" },
+                                          Devolvido:{ label: "Devolvido",color: "text-rose-400" },
+                                          Reenvio:  { label: "Reenvio",  color: "text-amber-400" },
                                         };
                                         const cfg = ACAO_CONFIG[log.acao] ?? { label: log.acao, color: "text-foreground" };
                                         return (
@@ -1501,7 +1501,7 @@ export function TemasView({ targetTopicoId }: { targetTopicoId?: string }) {
         aria-live="polite"
         className={
           submissionsPaused
-            ? "flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 dark:border-amber-400/20 dark:bg-amber-400/10 px-4 py-3 text-sm text-amber-700 dark:text-amber-400"
+            ? "flex items-center gap-2 rounded-xl border border-amber-400/20 bg-amber-400/10 px-4 py-3 text-sm text-amber-400"
             : "sr-only"
         }
       >
@@ -1654,14 +1654,14 @@ export function TemasView({ targetTopicoId }: { targetTopicoId?: string }) {
         const pct       = total > 0 ? Math.round((done / total) * 100) : 0;
 
         return (
-          <div key={tema.id} className="bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-sm relative">
+          <div key={tema.id} className="bg-slate-900 border border-border/50 rounded-2xl shadow-sm relative">
             {/* Tema header */}
             <div
               role="button"
               tabIndex={0}
               onClick={() => setExpanded(isOpen ? null : tema.id)}
               onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') setExpanded(isOpen ? null : tema.id); }}
-              className="w-full flex flex-col sm:flex-row sm:items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-4 hover:bg-slate-50 dark:hover:bg-white/[0.02] transition-colors text-left cursor-pointer"
+              className="w-full flex flex-col sm:flex-row sm:items-center gap-3 md:gap-4 px-4 md:px-5 py-3 md:py-4 hover:bg-white/[0.02] transition-colors text-left cursor-pointer"
             >
               <div className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
                 <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -1716,7 +1716,7 @@ export function TemasView({ targetTopicoId }: { targetTopicoId?: string }) {
                     <p className="text-sm font-bold text-foreground">{pct}%</p>
                     <p className="text-[10px] text-muted-foreground hidden sm:block">{done}/{total}</p>
                   </div>
-                  <div className="w-16 md:w-20 h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden hidden sm:block">
+                  <div className="w-16 md:w-20 h-2 bg-slate-800 rounded-full overflow-hidden hidden sm:block">
                     <div className="h-full bg-primary rounded-full transition-all" style={{ width: `${pct}%` }} />
                   </div>
                   <motion.div animate={{ rotate: isOpen ? 180 : 0 }} transition={{ duration: 0.2 }} className="hidden sm:block">

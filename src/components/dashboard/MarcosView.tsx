@@ -20,10 +20,10 @@ const RESPONSAVEL_LABEL: Record<Responsavel, string> = {
 };
 
 const RESPONSAVEL_COLOR: Record<Responsavel, string> = {
-  0: "bg-sky-50 text-sky-700 border-sky-200 dark:bg-sky-400/10 dark:text-sky-400 dark:border-sky-400/20",
-  1: "bg-violet-50 text-violet-700 border-violet-200 dark:bg-violet-400/10 dark:text-violet-400 dark:border-violet-400/20",
-  2: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-400/10 dark:text-emerald-400 dark:border-emerald-400/20",
-  3: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-400/10 dark:text-amber-400 dark:border-amber-400/20",
+  0: "bg-sky-400/10 text-sky-400 border-sky-400/20",
+  1: "bg-violet-400/10 text-violet-400 border-violet-400/20",
+  2: "bg-emerald-400/10 text-emerald-400 border-emerald-400/20",
+  3: "bg-amber-400/10 text-amber-400 border-amber-400/20",
 };
 
 interface Marco {
@@ -96,11 +96,11 @@ function MarcoModal({ title, form, onChange, onConfirm, onClose, loading, confir
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 12 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-md bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-2xl p-6 flex flex-col gap-5"
+        className="relative z-10 w-full max-w-md bg-slate-900 border border-border/50 rounded-2xl shadow-2xl p-6 flex flex-col gap-5"
       >
         <div className="flex items-center justify-between">
           <h3 className="text-base font-bold text-foreground">{title}</h3>
-          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors text-muted-foreground">
+          <button onClick={onClose} className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-muted-foreground">
             <X size={15} />
           </button>
         </div>
@@ -113,7 +113,7 @@ function MarcoModal({ title, form, onChange, onConfirm, onClose, loading, confir
               value={form.titulo}
               onChange={(e) => onChange({ ...form, titulo: e.target.value })}
               placeholder="Ex: Assinatura do Contrato"
-              className="w-full px-3 py-2.5 text-sm font-medium rounded-xl bg-slate-50 dark:bg-slate-800 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full px-3 py-2.5 text-sm font-medium rounded-xl bg-slate-800 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
 
@@ -124,7 +124,7 @@ function MarcoModal({ title, form, onChange, onConfirm, onClose, loading, confir
               value={form.etapa}
               onChange={(e) => onChange({ ...form, etapa: e.target.value })}
               placeholder="Descreva a etapa..."
-              className="w-full px-3 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full px-3 py-2.5 text-sm rounded-xl bg-slate-800 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
 
@@ -135,7 +135,7 @@ function MarcoModal({ title, form, onChange, onConfirm, onClose, loading, confir
               type="datetime-local"
               value={form.prazo}
               onChange={(e) => onChange({ ...form, prazo: e.target.value })}
-              className="w-full px-3 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-border/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+              className="w-full px-3 py-2.5 text-sm rounded-xl bg-slate-800 border border-border/50 text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
             />
           </div>
 
@@ -152,7 +152,7 @@ function MarcoModal({ title, form, onChange, onConfirm, onClose, loading, confir
                     onClick={() => toggleResponsavel(r)}
                     className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-all ${selected
                       ? RESPONSAVEL_COLOR[r]
-                      : "bg-slate-100 text-muted-foreground border-slate-200 dark:bg-white/5 dark:border-white/10 hover:border-primary/40"
+                      : "text-muted-foreground bg-white/5 border-white/10 hover:border-primary/40"
                       }`}
                   >
                     {RESPONSAVEL_LABEL[r]}
@@ -168,7 +168,7 @@ function MarcoModal({ title, form, onChange, onConfirm, onClose, loading, confir
 
         <div className="flex gap-2 pt-1">
           <button onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-border/50 text-muted-foreground hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+            className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-border/50 text-muted-foreground hover:bg-white/5 transition-colors">
             Cancelar
           </button>
           <button
@@ -350,7 +350,7 @@ export function MarcosView() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.97 }}
                     transition={{ duration: 0.22, delay: i * 0.04 }}
-                    className="bg-white dark:bg-slate-900 border border-border/50 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 shadow-sm hover:shadow-md transition-all group relative"
+                    className="bg-slate-900 border border-border/50 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row items-start gap-3 sm:gap-4 shadow-sm hover:shadow-md transition-all group relative"
                   >
                     {/* Timeline dot */}
                     <div className={`hidden sm:block mt-1 w-3 h-3 rounded-full border-2 shrink-0 ${overdue
@@ -366,8 +366,8 @@ export function MarcosView() {
                       <div className="flex flex-wrap items-center gap-2 mt-2">
                         {/* Prazo */}
                         <span className={`flex items-center gap-1 text-[11px] font-medium px-2 py-0.5 rounded-full border ${overdue
-                          ? "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-400/10 dark:text-rose-400 dark:border-rose-400/20"
-                          : "bg-slate-50 text-muted-foreground border-border/50 dark:bg-white/5"
+                          ? "bg-rose-400/10 text-rose-400 border-rose-400/20"
+                          : "text-muted-foreground border-border/50 bg-white/5"
                           }`}>
                           <CalendarDays size={10} />
                           {formatDate(marco.prazo)}
@@ -395,7 +395,7 @@ export function MarcosView() {
                       </button>
                       <button
                         onClick={() => setDeleteTarget(marco)}
-                        className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-rose-50 dark:hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-all"
+                        className="w-8 h-8 flex items-center justify-center rounded-xl hover:bg-rose-500/10 text-muted-foreground hover:text-rose-500 transition-all"
                         title="Excluir"
                       >
                         <Trash2 size={14} />
@@ -453,10 +453,10 @@ export function MarcosView() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 12 }}
               transition={{ duration: 0.2 }}
-              className="relative z-10 w-full max-w-sm bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-2xl p-6 flex flex-col gap-4"
+              className="relative z-10 w-full max-w-sm bg-slate-900 border border-border/50 rounded-2xl shadow-2xl p-6 flex flex-col gap-4"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-rose-500/10 flex items-center justify-center shrink-0">
                   <Trash2 size={18} className="text-rose-500" />
                 </div>
                 <div>
@@ -466,7 +466,7 @@ export function MarcosView() {
               </div>
               <div className="flex gap-2">
                 <button onClick={() => setDeleteTarget(null)}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-border/50 text-muted-foreground hover:bg-slate-50 dark:hover:bg-white/5 transition-colors">
+                  className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-border/50 text-muted-foreground hover:bg-white/5 transition-colors">
                   Cancelar
                 </button>
                 <button onClick={handleDelete} disabled={submitting}

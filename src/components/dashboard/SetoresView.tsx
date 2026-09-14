@@ -40,13 +40,13 @@ function SetorModal({ title, nome, onChange, onConfirm, onClose, loading, confir
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.96, y: 12 }}
         transition={{ duration: 0.2, ease: "easeOut" }}
-        className="relative z-10 w-full max-w-sm bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-2xl p-6 flex flex-col gap-5"
+        className="relative z-10 w-full max-w-sm bg-slate-900 border border-border/50 rounded-2xl shadow-2xl p-6 flex flex-col gap-5"
       >
         <div className="flex items-center justify-between">
           <h3 className="text-base font-bold text-foreground">{title}</h3>
           <button
             onClick={onClose}
-            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-slate-100 dark:hover:bg-white/10 transition-colors text-muted-foreground"
+            className="w-7 h-7 flex items-center justify-center rounded-full hover:bg-white/10 transition-colors text-muted-foreground"
           >
             <X size={15} />
           </button>
@@ -62,14 +62,14 @@ function SetorModal({ title, nome, onChange, onConfirm, onClose, loading, confir
             onKeyDown={(e) => { if (e.key === "Enter" && nome.trim()) onConfirm(); }}
             placeholder="Ex: Secretaria de Saúde"
             autoFocus
-            className="w-full px-3 py-2.5 text-sm rounded-xl bg-slate-50 dark:bg-slate-800 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
+            className="w-full px-3 py-2.5 text-sm rounded-xl bg-slate-800 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30"
           />
         </div>
 
         <div className="flex gap-2">
           <button
             onClick={onClose}
-            className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-border/50 text-muted-foreground hover:bg-slate-50 dark:hover:bg-white/5 transition-colors"
+            className="flex-1 py-2.5 rounded-xl text-sm font-medium border border-border/50 text-muted-foreground hover:bg-white/5 transition-colors"
           >
             Cancelar
           </button>
@@ -197,7 +197,7 @@ export function SetoresView() {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Buscar setor..."
-                className="pl-9 pr-3 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-full sm:w-52"
+                className="pl-9 pr-3 py-2 text-sm rounded-xl bg-slate-900 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-full sm:w-52"
               />
             </div>
             <button
@@ -234,7 +234,7 @@ export function SetoresView() {
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.97 }}
                   transition={{ duration: 0.2, delay: i * 0.03 }}
-                  className="bg-white dark:bg-slate-900 border border-border/50 rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md hover:border-primary/30 transition-all group"
+                  className="bg-slate-900 border border-border/50 rounded-2xl p-4 flex items-center gap-3 shadow-sm hover:shadow-md hover:border-primary/30 transition-all group"
                 >
                   <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                     <Building2 size={16} className="text-primary" />

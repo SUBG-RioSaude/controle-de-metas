@@ -74,7 +74,7 @@ export function DashboardPage() {
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-50 dark:bg-slate-950">
+    <div className="flex h-screen overflow-hidden bg-slate-950">
       {/* ── Mobile Overlay ── */}
       {isMobileMenuOpen && (
         <div
@@ -85,7 +85,7 @@ export function DashboardPage() {
 
       {/* ── Sidebar ───────────────────────────────────────────────────────── */}
       <aside className={`
-        fixed inset-y-0 left-0 z-50 w-64 shrink-0 bg-white dark:bg-slate-900 border-r border-border/50 flex flex-col transition-transform duration-300
+        fixed inset-y-0 left-0 z-50 w-64 shrink-0 bg-slate-900 border-r border-border/50 flex flex-col transition-transform duration-300
         md:relative md:translate-x-0
         ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
       `}>
@@ -129,7 +129,7 @@ export function DashboardPage() {
               onClick={() => { setView(link.id); setIsMobileMenuOpen(false); }}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all text-left ${view === link.id
                   ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5"
+                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
                 }`}
             >
               {link.icon}
@@ -142,12 +142,12 @@ export function DashboardPage() {
         {/* Footer */}
         <div className="px-3 py-4 border-t border-border/50 flex flex-col gap-1">
           <Link href="/"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-slate-100 dark:hover:bg-white/5 transition-all">
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-white/5 transition-all">
             <Home size={16} />
             Página Inicial
           </Link>
           <button onClick={logout}
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all">
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-rose-500 hover:bg-rose-500/10 transition-all">
             <LogOut size={16} />
             Sair
           </button>
@@ -155,17 +155,17 @@ export function DashboardPage() {
 
         {/* Logos */}
         <div className="px-4 pb-4 flex items-center gap-2 opacity-40">
-          <Image src="/brand/logoazul.png" alt="SMS" width={60} height={18} className="block dark:hidden object-contain" />
-          <Image src="/brand/logobranca.png" alt="SMS" width={60} height={18} className="hidden dark:block object-contain" />
+          {/* Só a versão branca: o logo azul existia para o fundo do tema claro. */}
+          <Image src="/brand/logobranca.png" alt="SMS" width={60} height={18} className="object-contain" />
         </div>
       </aside>
 
       {/* ── Main content ──────────────────────────────────────────────────── */}
       <main className="flex-1 overflow-auto w-full min-w-0">
         {/* Header */}
-        <div className="sticky top-0 z-10 bg-slate-50/80 dark:bg-slate-950/80 backdrop-blur-md border-b border-border/50 px-4 md:px-8 py-3 md:py-4 flex items-center gap-3">
+        <div className="sticky top-0 z-10 bg-slate-950/80 backdrop-blur-md border-b border-border/50 px-4 md:px-8 py-3 md:py-4 flex items-center gap-3">
           <button
-            className="md:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+            className="md:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground rounded-lg hover:bg-slate-800 transition-colors"
             onClick={() => setIsMobileMenuOpen(true)}
           >
             <Menu size={20} />

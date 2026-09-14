@@ -22,11 +22,11 @@ interface User {
 const ROLES: Role[] = ["Visualizador", "Analista", "Aprovador", "Admin", "Pending"];
 
 const ROLE_STYLE: Record<Role, string> = {
-  Pending:      "bg-amber-50 text-amber-600 border-amber-200 dark:bg-amber-400/10 dark:text-amber-400 dark:border-amber-400/20",
-  Visualizador: "bg-sky-50 text-sky-600 border-sky-200 dark:bg-sky-400/10 dark:text-sky-400 dark:border-sky-400/20",
-  Analista:     "bg-violet-50 text-violet-600 border-violet-200 dark:bg-violet-400/10 dark:text-violet-400 dark:border-violet-400/20",
-  Aprovador:    "bg-emerald-50 text-emerald-600 border-emerald-200 dark:bg-emerald-400/10 dark:text-emerald-400 dark:border-emerald-400/20",
-  Admin:        "bg-rose-50 text-rose-600 border-rose-200 dark:bg-rose-400/10 dark:text-rose-400 dark:border-rose-400/20",
+  Pending:      "bg-amber-400/10 text-amber-400 border-amber-400/20",
+  Visualizador: "bg-sky-400/10 text-sky-400 border-sky-400/20",
+  Analista:     "bg-violet-400/10 text-violet-400 border-violet-400/20",
+  Aprovador:    "bg-emerald-400/10 text-emerald-400 border-emerald-400/20",
+  Admin:        "bg-rose-400/10 text-rose-400 border-rose-400/20",
 };
 
 export function UsuariosView() {
@@ -90,15 +90,15 @@ export function UsuariosView() {
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Buscar usuário..."
-            className="pl-8 pr-3 py-2 text-sm rounded-xl bg-white dark:bg-slate-900 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-full sm:w-56"
+            className="pl-8 pr-3 py-2 text-sm rounded-xl bg-slate-900 border border-border/50 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/30 w-full sm:w-56"
           />
         </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-sm">
+      <div className="bg-slate-900 border border-border/50 rounded-2xl shadow-sm">
         <div className="grid grid-cols-[auto_1fr_auto_auto] gap-0 divide-y divide-border/40">
           {/* Header */}
-          <div className="hidden sm:grid col-span-4 grid-cols-[auto_1fr_auto_auto] px-5 py-3 bg-slate-50 dark:bg-white/[0.02]">
+          <div className="hidden sm:grid col-span-4 grid-cols-[auto_1fr_auto_auto] px-5 py-3 bg-white/[0.02]">
             <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide w-10">Avatar</span>
             <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide pl-3">Nome / E-mail</span>
             <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wide px-4">Role / Permissão</span>
@@ -168,7 +168,7 @@ function UserRow({ user, index, isUpdating, onRoleChange, canViewHistory, liveLo
       style={{ zIndex: 50 - index }}
     >
       {/* Main row */}
-      <div className={`flex flex-col sm:grid sm:grid-cols-[auto_1fr_auto_auto] sm:items-center gap-3 sm:gap-0 px-4 sm:px-5 py-4 hover:bg-slate-50/80 dark:hover:bg-white/[0.02] transition-all relative`}>
+      <div className={`flex flex-col sm:grid sm:grid-cols-[auto_1fr_auto_auto] sm:items-center gap-3 sm:gap-0 px-4 sm:px-5 py-4 hover:bg-white/[0.02] transition-all relative`}>
         {isPending && (
           <div className="absolute left-0 top-0 bottom-0 w-1 bg-amber-500" />
         )}
@@ -186,7 +186,7 @@ function UserRow({ user, index, isUpdating, onRoleChange, canViewHistory, liveLo
               )}
             </div>
             {isPending && (
-              <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-500 rounded-full border-2 border-white dark:border-slate-900 animate-pulse" />
+              <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-amber-500 rounded-full border-2 border-slate-900 animate-pulse" />
             )}
           </div>
 
@@ -195,7 +195,7 @@ function UserRow({ user, index, isUpdating, onRoleChange, canViewHistory, liveLo
             <div className="flex items-center gap-2">
               <p className="text-sm font-semibold text-foreground truncate">{user.name}</p>
               {isPending && (
-                <span className="text-[9px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                <span className="text-[9px] font-bold bg-amber-500/20 text-amber-400 px-1.5 py-0.5 rounded uppercase tracking-wider">
                   Ação Requerida
                 </span>
               )}
@@ -206,7 +206,7 @@ function UserRow({ user, index, isUpdating, onRoleChange, canViewHistory, liveLo
                 <button
                   onClick={handleToggleLogs}
                   className={`inline-flex items-center gap-1 text-[9px] font-medium px-1.5 py-0.5 rounded border transition-colors ${
-                    logsOpen ? "bg-primary/10 text-primary border-primary/20" : "text-muted-foreground border-border/40 hover:bg-slate-100 dark:hover:bg-white/5"
+                    logsOpen ? "bg-primary/10 text-primary border-primary/20" : "text-muted-foreground border-border/40 hover:bg-white/5"
                   }`}
                 >
                   {logsLoading ? <Loader2 size={9} className="animate-spin" /> : <History size={9} />}
@@ -248,7 +248,7 @@ function UserRow({ user, index, isUpdating, onRoleChange, canViewHistory, liveLo
                   initial={{ opacity: 0, y: 8, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 8, scale: 0.95 }}
-                  className="absolute right-0 sm:right-auto sm:left-4 top-full mt-2 w-48 sm:w-44 bg-white dark:bg-slate-900 border border-border/50 rounded-2xl shadow-2xl z-50 py-1.5 overflow-hidden"
+                  className="absolute right-0 sm:right-auto sm:left-4 top-full mt-2 w-48 sm:w-44 bg-slate-900 border border-border/50 rounded-2xl shadow-2xl z-50 py-1.5 overflow-hidden"
                 >
                   {ROLES.map((r) => {
                     const isSelected = user.role === r;
@@ -256,7 +256,7 @@ function UserRow({ user, index, isUpdating, onRoleChange, canViewHistory, liveLo
                       <button
                         key={r}
                         onClick={() => { onRoleChange(user.id, r); setOpen(false); }}
-                        className={`w-full flex items-center justify-between px-3 py-2 text-[12px] sm:text-[11px] font-semibold transition-colors hover:bg-slate-50 dark:hover:bg-white/5 ${isSelected ? "text-primary" : "text-foreground"}`}
+                        className={`w-full flex items-center justify-between px-3 py-2 text-[12px] sm:text-[11px] font-semibold transition-colors hover:bg-white/5 ${isSelected ? "text-primary" : "text-foreground"}`}
                       >
                         <div className="flex items-center gap-2">
                           <div className={`w-1.5 h-1.5 rounded-full ${ROLE_STYLE[r].split(" ")[0]}`} />
@@ -294,7 +294,7 @@ function UserRow({ user, index, isUpdating, onRoleChange, canViewHistory, liveLo
             transition={{ duration: 0.15 }}
             className="overflow-hidden"
           >
-            <div className="px-5 pb-3 border-t border-border/20 pt-2 bg-slate-50/50 dark:bg-white/[0.01]">
+            <div className="px-5 pb-3 border-t border-border/20 pt-2 bg-white/[0.01]">
               <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-2 flex items-center gap-1">
                 <History size={10} />Histórico de roles
               </p>
